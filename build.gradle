@@ -1,0 +1,59 @@
+subprojects {
+    apply plugin: 'java'
+
+    group 'com.jokerbee'
+    version '1.0.1'
+
+    def logVersion = "2.11.1"
+    def commonsVersion = 2.6
+
+    repositories {
+        jcenter()
+        mavenCentral()
+        maven{ url'http://maven.aliyun.com/nexus/content/groups/public/'}
+    }
+
+    dependencies {
+        compile 'org.slf4j:slf4j-api:1.7.25'
+        compile ("org.apache.logging.log4j:log4j-api:${logVersion}",
+                "org.apache.logging.log4j:log4j-core:${logVersion}",
+                "org.apache.logging.log4j:log4j-slf4j-impl:${logVersion}")
+
+        compile 'com.lmax:disruptor:3.4.2'
+
+        compile ("commons-io:commons-io:${commonsVersion}",
+                "commons-lang:commons-lang:${commonsVersion}")
+
+        testCompile 'org.jmockit:jmockit:1.41'
+        testCompile 'junit:junit:4.12'
+
+    }
+
+    tasks.withType(JavaCompile) {
+        options.encoding = 'UTF-8'
+    }
+
+    compileJava {
+        targetCompatibility = JavaVersion.VERSION_14
+        sourceCompatibility = JavaVersion.VERSION_14
+    }
+
+    jar {
+        exclude('/log4j2.xml', '/log', '/conf', '/config', '/icon', '/script')
+    }
+
+    task dependentTask(type: Copy) {
+        from configurations.runtimeClasspath
+        into "$buildDir/dependLibs"
+    }
+
+    tasks.withType(JavaCompile) {
+        options.compilerArgs += "--enable-preview"
+    }
+    tasks.withType(Test) {
+        jvmArgs += "--enable-preview"
+    }
+    tasks.withType(JavaExec) {
+        jvmArgs += "--enable-preview"
+    }
+}

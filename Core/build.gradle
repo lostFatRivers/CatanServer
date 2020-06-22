@@ -1,0 +1,12 @@
+def vertxVersion = "3.9.1"
+
+dependencies {
+    compile "io.vertx:vertx-core:${vertxVersion}"
+    compile "io.vertx:vertx-web:${vertxVersion}"
+
+    compile "commons-codec:commons-codec:1.14"
+    compile "org.apache.commons:commons-crypto:1.0.0"
+    compile "org.bouncycastle:bcprov-jdk15on:1.64"
+
+    compile "redis.clients:jedis:3.0.1"
+}

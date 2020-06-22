@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="ERROR">
+    <properties>
+        <property name="commonLayout">%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n</property>
+    </properties>
+
+    <context-param>
+        <param-name>log4jRefreshInterval</param-name>
+        <param-value>60000</param-value>
+    </context-param>
+    <listener>
+        <listener-class>
+            org.springframework.web.util.Log4jConfigListener
+        </listener-class>
+    </listener>
+
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="${commonLayout}" />
+        </Console>
+
+        <File name="log" fileName="log/db.log" append="true">
+            <PatternLayout pattern="${commonLayout}"/>
+            <Filters>
+                <ThresholdFilter />
+            </Filters>
+        </File>
+
+        <File name="err" fileName="log/error.log" append="true">
+            <PatternLayout pattern="${commonLayout}"/>
+            <Filters>
+                <ThresholdFilter level="error" onMatch="ACCEPT" onMisMatch="DENY" />
+            </Filters>
+        </File>
+    </Appenders>
+
+    <Loggers>
+        <Root level="INFO">
+            <AppenderRef ref="Console"/>
+            <appender-ref ref="err"/>
+        </Root>
+
+        <AsyncLogger name="FILE" level="INFO">
+            <appender-ref ref="log"/>
+            <appender-ref ref="err"/>
+        </AsyncLogger>
+    </Loggers>
+
+</Configuration>

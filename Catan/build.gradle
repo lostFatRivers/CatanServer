@@ -1,0 +1,16 @@
+def vertxVersion = "3.9.1"
+
+dependencies {
+    compile project(':Core')
+
+    compile "io.vertx:vertx-config:${vertxVersion}"
+    compile "io.vertx:vertx-config-hocon:${vertxVersion}"
+
+    compile "org.reflections:reflections:0.9.11"
+}
+
+jar {
+    manifest.attributes ('Main-Class': 'com.jokerbee.CatanMain',
+            'Class-Path': '. lib/	' + configurations.runtimeClasspath.files.collect { "lib/$it.name" }.join('	'))
+    exclude('/protocol', '/webroot', '/keystore', "server.conf", "server.json", "zookeeper.json", "log4j2.xml", "protocol.py")
+}
