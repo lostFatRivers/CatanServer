@@ -6,6 +6,7 @@ import com.jokerbee.consts.MessageType;
 import com.jokerbee.model.RoomModel;
 import com.jokerbee.player.Player;
 import com.jokerbee.player.PlayerManager;
+import com.jokerbee.util.RandomUtil;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.eventbus.MessageConsumer;
@@ -238,7 +239,7 @@ public class RoomVerticle extends AbstractVerticle {
     }
 
     private int randomGameSeed() {
-        return 0;
+        return RandomUtil.getRandom(0, 5000);
     }
 
     private void selectColor(int roomId, Message<JsonObject> msg) {

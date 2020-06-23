@@ -18,7 +18,7 @@ import java.util.Map;
  * @param <T> 转换枚举;
  */
 public abstract class AbstractStateMachine<S extends Enum<S>, T extends Enum<T>> {
-    protected static Logger logger = LoggerFactory.getLogger("TEST");
+    protected static Logger logger = LoggerFactory.getLogger("StateMachine");
 
     /** 当前状态 */
     protected volatile S currentState;
@@ -26,12 +26,12 @@ public abstract class AbstractStateMachine<S extends Enum<S>, T extends Enum<T>>
     /** 状态转换对应 model */
     protected Map<T, TransitionModel<S, T>> transitions;
     /** 起始状态对应 model */
-    private Map<S, List<TransitionModel<S, T>>> fromStateTransitions;
+    private final Map<S, List<TransitionModel<S, T>>> fromStateTransitions;
 
     /** 状态切换回调方法 */
-    private Map<String, Method> onStateMethods;
+    private final Map<String, Method> onStateMethods;
     /** 转换执行回调方法 */
-    private Map<String, Method> onTransitionMethods;
+    private final Map<String, Method> onTransitionMethods;
 
     public AbstractStateMachine(S originalState) {
         this.currentState = originalState;
