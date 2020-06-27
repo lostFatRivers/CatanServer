@@ -186,4 +186,59 @@ public class GameModule extends AbstractModule {
                 .put("totalScore", totalScore);
         vertx.eventBus().send(Constants.API_SYNC_ROLE_PRE + player.getRoomId(), msg);
     }
+
+    @MessageHandler(code = MessageType.CS_START_EXCHANGE)
+    private void startExchange(Player player, JsonObject message) throws Exception {
+        logger.info("player start exchange.");
+        if (player.getRoomId() <= 0 || !message.containsKey("outWoodNum") || !message.containsKey("outBrickNum")
+                || !message.containsKey("outSheepNum") || !message.containsKey("outRiceNum")|| !message.containsKey("outStoneNum")
+                || !message.containsKey("inWoodNum") || !message.containsKey("inBrickNum")|| !message.containsKey("inSheepNum")
+                || !message.containsKey("inRiceNum") || !message.containsKey("inStoneNum")) {
+            logger.error("player start exchange error.");
+            return;
+        }
+        message.put("playerId", player.getPlayerId());
+        vertx.eventBus().send(Constants.API_START_EXCHANGE_PRE + player.getRoomId(), message);
+    }
+
+    @MessageHandler(code = MessageType.CS_CLOSE_EXCHANGE)
+    private void closeExchange(Player player, JsonObject message) throws Exception {
+        logger.info("player close exchange.");
+        if (player.getRoomId() <= 0) {
+            logger.error("player close exchange error.");
+            return;
+        }
+        vertx.eventBus().send(Constants.API_CLOSE_EXCHANGE_PRE + player.getRoomId(), player.getPlayerId());
+    }
+
+    @MessageHandler(code = MessageType.CS_ACCEPT_EXCHANGE)
+    private void acceptExchange(Player player, JsonObject message) throws Exception {
+        logger.info("player accept exchange.");
+        if (player.getRoomId() <= 0 || !message.containsKey("roleIndex")) {
+            logger.error("player accept exchange error.");
+            return;
+        }
+        vertx.eventBus().send(Constants.API_ACCEPT_EXCHANGE_PRE + player.getRoomId(), player.getPlayerId());
+    }
+
+    @MessageHandler(code = MessageType.CS_RESUME_EXCHANGE)
+    private void resumeExchange(Player player, JsonObject message) throws Exception {
+        logger.info("player resume exchange.");
+        if (player.getRoomId() <= 0 || !message.containsKey("roleIndex")) {
+            logger.error("player resume exchange error.");
+            return;
+        }
+        vertx.eventBus().send(Constants.API_RESUME_EXCHANGE_PRE + player.getRoomId(), player.getPlayerId());
+    }
+
+    @MessageHandler(code = MessageType.CS_CONFIRM_EXCHANGE)
+    private void confirmExchange(Player player, JsonObject message) throws Exception {
+        logger.info("player confirm exchange.");
+        if (player.getRoomId() <= 0 || !message.containsKey("targetId")) {
+            logger.error("player resume exchange error.");
+            return;
+        }
+        JsonObject msg = new JsonObject().put("playerId", player.getPlayerId()).put("targetId", message.getString("targetId"));
+        vertx.eventBus().send(Constants.API_CONFIRM_EXCHANGE_PRE + player.getRoomId(), msg);
+    }
 }

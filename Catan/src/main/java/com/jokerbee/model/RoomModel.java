@@ -31,6 +31,10 @@ public class RoomModel {
     // roadKey - roleIndex
     private Map<String, Integer> cityCache = new HashMap<>();
 
+    private String startExchangePlayerId = "";
+    private JsonObject exchangeInfo;
+    private String acceptExchangePlayerId = "";
+
     public int getRoomId() {
         return roomId;
     }
@@ -115,5 +119,29 @@ public class RoomModel {
         }
         cityCache.put(cityKey, roleIndex);
         return true;
+    }
+
+    public JsonObject getExchangeInfo() {
+        return exchangeInfo;
+    }
+
+    public void setExchangeInfo(JsonObject exchangeInfo) {
+        this.exchangeInfo = exchangeInfo;
+    }
+
+    public String getStartExchangePlayerId() {
+        return startExchangePlayerId;
+    }
+
+    public void setStartExchangePlayerId(String startExchangePlayerId) {
+        this.startExchangePlayerId = startExchangePlayerId;
+    }
+
+    public String getAcceptExchangePlayerId() {
+        return acceptExchangePlayerId;
+    }
+
+    public void setAcceptExchangePlayerId(String acceptExchangePlayerId) {
+        this.acceptExchangePlayerId = acceptExchangePlayerId;
     }
 }

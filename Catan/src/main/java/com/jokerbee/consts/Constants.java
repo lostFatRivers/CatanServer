@@ -20,4 +20,9 @@ public interface Constants {
     String API_BUILD_ROAD_PRE = "buildRoad_";
     String API_BUILD_CITY_PRE = "buildCity_";
     String API_TURN_NEXT_PRE = "turnNext_";
+    String API_START_EXCHANGE_PRE = "startExchange_";
+    String API_CLOSE_EXCHANGE_PRE = "closeExchange_";
+    String API_ACCEPT_EXCHANGE_PRE = "acceptExchange_";
+    String API_RESUME_EXCHANGE_PRE = "resumeExchange_";
+    String API_CONFIRM_EXCHANGE_PRE = "confirmExchange_";
 }

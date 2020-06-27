@@ -61,4 +61,24 @@ public interface MessageType {
     // 同步玩家显示
     int CS_SYNC_ROLE_VIEW = 1029;
     int SC_SYNC_ROLE_VIEW = 1030;
+
+    // 发起资源交换
+    int CS_START_EXCHANGE = 1031;
+    int SC_START_EXCHANGE = 1032;
+
+    // 取消资源交换
+    int CS_CLOSE_EXCHANGE = 1033;
+    int SC_CLOSE_EXCHANGE = 1034;
+
+    // 接受资源交换
+    int CS_ACCEPT_EXCHANGE = 1035;
+    int SC_ACCEPT_EXCHANGE = 1036;
+
+    // 拒绝资源交换
+    int CS_RESUME_EXCHANGE = 1037;
+    int SC_RESUME_EXCHANGE = 1038;
+
+    // 确认资源交换(完成)
+    int CS_CONFIRM_EXCHANGE = 1038;
+    int SC_CONFIRM_EXCHANGE = 1039;
 }
