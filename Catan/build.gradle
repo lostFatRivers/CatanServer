@@ -1,4 +1,4 @@
-def vertxVersion = "3.9.1"
+def vertxVersion = "3.9.2"
 
 dependencies {
     compile project(':Core')
@@ -7,6 +7,8 @@ dependencies {
     compile "io.vertx:vertx-config-hocon:${vertxVersion}"
 
     compile "org.reflections:reflections:0.9.11"
+
+    implementation "com.squareup.okhttp3:okhttp:4.8.0"
 }
 
 jar {
