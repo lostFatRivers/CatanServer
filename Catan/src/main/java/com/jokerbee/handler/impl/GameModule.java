@@ -241,4 +241,15 @@ public class GameModule extends AbstractModule {
         JsonObject msg = new JsonObject().put("playerId", player.getPlayerId()).put("targetId", message.getString("targetId"));
         vertx.eventBus().send(Constants.API_CONFIRM_EXCHANGE_PRE + player.getRoomId(), msg);
     }
+
+    @MessageHandler(code = MessageType.CS_SEND_CHAT)
+    private void sendChat(Player player, JsonObject message) throws Exception {
+        logger.info("player send chat.");
+        if (player.getRoomId() <= 0 || !message.containsKey("nickName") || !message.containsKey("chatMsg")) {
+            logger.error("player send chat error.");
+            return;
+        }
+        JsonObject msg = new JsonObject().put("nickName", message.getString("nickName")).put("chatMsg", message.getString("chatMsg"));
+        vertx.eventBus().send(Constants.API_SEND_CHAT_PRE + player.getRoomId(), msg);
+    }
 }

@@ -81,4 +81,8 @@ public interface MessageType {
     // 确认资源交换(完成)
     int CS_CONFIRM_EXCHANGE = 1038;
     int SC_CONFIRM_EXCHANGE = 1039;
+
+    // 聊天内容
+    int CS_SEND_CHAT = 1040;
+    int SC_SEND_CHAT = 1041;
 }

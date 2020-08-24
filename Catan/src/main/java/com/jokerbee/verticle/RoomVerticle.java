@@ -8,6 +8,7 @@ import com.jokerbee.player.Player;
 import com.jokerbee.player.PlayerManager;
 import com.jokerbee.util.RandomUtil;
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.Handler;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonArray;
@@ -86,37 +87,27 @@ public class RoomVerticle extends AbstractVerticle {
 
     private void registerRoomConsumers(RoomModel room) {
         int roomId = room.getRoomId();
-        MessageConsumer<String> consumer1 = vertx.eventBus().consumer(Constants.API_DELETE_ROOM_PRE + roomId, msg -> this.deleteRoom(roomId, msg));
-        MessageConsumer<String> consumer2 = vertx.eventBus().consumer(Constants.API_JOIN_ROOM_PRE + roomId, msg -> this.joinRoom(roomId, msg));
-        MessageConsumer<String> consumer3 = vertx.eventBus().consumer(Constants.API_EXIT_ROOM_PRE + roomId, msg -> this.exitRoom(roomId, msg));
-        MessageConsumer<String> consumer4 = vertx.eventBus().consumer(Constants.API_START_GAME_PRE + roomId, msg -> this.startGame(roomId, msg));
-        MessageConsumer<JsonObject> consumer5 = vertx.eventBus().consumer(Constants.API_SELECT_COLOR_PRE + roomId, msg -> this.selectColor(roomId, msg));
-        MessageConsumer<JsonObject> consumer6 = vertx.eventBus().consumer(Constants.API_BUILD_ROAD_PRE + roomId, msg -> this.buildRoad(roomId, msg));
-        MessageConsumer<JsonObject> consumer7 = vertx.eventBus().consumer(Constants.API_BUILD_CITY_PRE + roomId, msg -> this.buildCity(roomId, msg));
-        MessageConsumer<JsonObject> consumer8 = vertx.eventBus().consumer(Constants.API_THROW_DICE_PRE + roomId, msg -> this.syncDice(roomId, msg));
-        MessageConsumer<String> consumer9 = vertx.eventBus().consumer(Constants.API_TURN_NEXT_PRE + roomId, msg -> this.turnNext(roomId, msg));
-        MessageConsumer<JsonObject> consumer10 = vertx.eventBus().consumer(Constants.API_SYNC_ROLE_PRE + roomId, msg -> this.syncRole(roomId, msg));
-        MessageConsumer<JsonObject> consumer11 = vertx.eventBus().consumer(Constants.API_START_EXCHANGE_PRE + roomId, msg -> this.startExchange(roomId, msg));
-        MessageConsumer<String> consumer12 = vertx.eventBus().consumer(Constants.API_CLOSE_EXCHANGE_PRE + roomId, msg -> this.closeExchange(roomId, msg));
-        MessageConsumer<String> consumer13 = vertx.eventBus().consumer(Constants.API_ACCEPT_EXCHANGE_PRE + roomId, msg -> this.acceptExchange(roomId, msg));
-        MessageConsumer<String> consumer14 = vertx.eventBus().consumer(Constants.API_RESUME_EXCHANGE_PRE + roomId, msg -> this.resumeExchange(roomId, msg));
-        MessageConsumer<JsonObject> consumer15 = vertx.eventBus().consumer(Constants.API_CONFIRM_EXCHANGE_PRE + roomId, msg -> this.confirmExchange(roomId, msg));
+        this.<String>registerConsumer(room, Constants.API_DELETE_ROOM_PRE + roomId, msg -> this.deleteRoom(roomId, msg));
+        this.<String>registerConsumer(room, Constants.API_JOIN_ROOM_PRE + roomId, msg -> this.joinRoom(roomId, msg));
+        this.<String>registerConsumer(room, Constants.API_EXIT_ROOM_PRE + roomId, msg -> this.exitRoom(roomId, msg));
+        this.<String>registerConsumer(room, Constants.API_START_GAME_PRE + roomId, msg -> this.startGame(roomId, msg));
+        this.<JsonObject>registerConsumer(room, Constants.API_SELECT_COLOR_PRE + roomId, msg -> this.selectColor(roomId, msg));
+        this.<JsonObject>registerConsumer(room, Constants.API_BUILD_ROAD_PRE + roomId, msg -> this.buildRoad(roomId, msg));
+        this.<JsonObject>registerConsumer(room, Constants.API_BUILD_CITY_PRE + roomId, msg -> this.buildCity(roomId, msg));
+        this.<JsonObject>registerConsumer(room, Constants.API_THROW_DICE_PRE + roomId, msg -> this.syncDice(roomId, msg));
+        this.<String>registerConsumer(room, Constants.API_TURN_NEXT_PRE + roomId, msg -> this.turnNext(roomId, msg));
+        this.<JsonObject>registerConsumer(room, Constants.API_SYNC_ROLE_PRE + roomId, msg -> this.syncRole(roomId, msg));
+        this.<JsonObject>registerConsumer(room, Constants.API_START_EXCHANGE_PRE + roomId, msg -> this.startExchange(roomId, msg));
+        this.<String>registerConsumer(room, Constants.API_CLOSE_EXCHANGE_PRE + roomId, msg -> this.closeExchange(roomId, msg));
+        this.<String>registerConsumer(room, Constants.API_ACCEPT_EXCHANGE_PRE + roomId, msg -> this.acceptExchange(roomId, msg));
+        this.<String>registerConsumer(room, Constants.API_RESUME_EXCHANGE_PRE + roomId, msg -> this.resumeExchange(roomId, msg));
+        this.<JsonObject>registerConsumer(room, Constants.API_CONFIRM_EXCHANGE_PRE + roomId, msg -> this.confirmExchange(roomId, msg));
+        this.<JsonObject>registerConsumer(room, Constants.API_SEND_CHAT_PRE + roomId, msg -> this.sendChat(roomId, msg));
+    }
 
-        room.getConsumers().add(consumer1);
-        room.getConsumers().add(consumer2);
-        room.getConsumers().add(consumer3);
-        room.getConsumers().add(consumer4);
-        room.getConsumers().add(consumer5);
-        room.getConsumers().add(consumer6);
-        room.getConsumers().add(consumer7);
-        room.getConsumers().add(consumer8);
-        room.getConsumers().add(consumer9);
-        room.getConsumers().add(consumer10);
-        room.getConsumers().add(consumer11);
-        room.getConsumers().add(consumer12);
-        room.getConsumers().add(consumer13);
-        room.getConsumers().add(consumer14);
-        room.getConsumers().add(consumer15);
+    private <T> void registerConsumer(RoomModel room, String address, Handler<Message<T>> handler) {
+        MessageConsumer<T> consumer = vertx.eventBus().consumer(address, handler);
+        room.getConsumers().add(consumer);
     }
 
     private void cancelRoomConsumers(RoomModel room) {
@@ -505,4 +496,19 @@ public class RoomVerticle extends AbstractVerticle {
                 .put("outWoodNum", exchangeInfo.getInteger("inWoodNum"));
         target.sendMessage(result3);
     }
+
+    private void sendChat(int roomId, Message<JsonObject> msg) {
+        JsonObject data = msg.body();
+        String nickName = data.getString("nickName");
+        String chatMsg = data.getString("chatMsg");
+
+        RoomModel room = rooms.get(roomId);
+        if (room == null) {
+            return;
+        }
+        JsonObject result = new JsonObject().put("type", MessageType.SC_SEND_CHAT)
+                .put("nickName", nickName).put("chatContent", chatMsg);
+        room.sendToAllPlayer(result);
+    }
+
 }

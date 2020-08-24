@@ -25,4 +25,5 @@ public interface Constants {
     String API_ACCEPT_EXCHANGE_PRE = "acceptExchange_";
     String API_RESUME_EXCHANGE_PRE = "resumeExchange_";
     String API_CONFIRM_EXCHANGE_PRE = "confirmExchange_";
+    String API_SEND_CHAT_PRE = "sendChat_";
 }
