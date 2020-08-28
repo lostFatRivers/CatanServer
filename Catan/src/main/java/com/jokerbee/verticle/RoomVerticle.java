@@ -353,6 +353,35 @@ public class RoomVerticle extends AbstractVerticle {
         if (room == null) {
             return;
         }
+        // 最长路通知
+        int roadLimit = Constants.MAX_ROAD_LENGTH_LIMIT;
+        if (StringUtils.isNotEmpty(room.getMaxRoadPlayerId())) {
+            roadLimit = room.getMaxRoadLength();
+        }
+        if (roadLength > roadLimit) {
+            room.setMaxRoadLength(roadLength);
+            room.setMaxRoadPlayerId(playerId);
+
+            JsonObject result = new JsonObject().put("type", MessageType.SC_MAX_ROAD_LENGTH_NOTICE);
+            result.put("roleIndex", player.getRoleIndex())
+                    .put("roadLength", roadLength);
+            room.sendToAllPlayer(result);
+        }
+        // 最大士兵数通知
+        int robLimit = Constants.MAX_ROB_TIMES_LIMIT;
+        if (StringUtils.isNotEmpty(room.getMaxRobPlayerId())) {
+            robLimit = room.getMaxRobTimes();
+        }
+        if (robTimes > robLimit) {
+            room.setMaxRobTimes(robTimes);
+            room.setMaxRobPlayerId(playerId);
+
+            JsonObject result = new JsonObject().put("type", MessageType.SC_MAX_ROB_TIMES_NOTICE);
+            result.put("roleIndex", player.getRoleIndex())
+                    .put("robTimes", robTimes);
+            room.sendToAllPlayer(result);
+        }
+
         JsonObject result = new JsonObject().put("type", MessageType.SC_SYNC_ROLE_VIEW);
         result.put("roleIndex", player.getRoleIndex())
                 .put("sourceCardNum", sourceCardNum)

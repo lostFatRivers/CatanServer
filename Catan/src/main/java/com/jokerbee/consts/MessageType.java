@@ -85,4 +85,10 @@ public interface MessageType {
     // 聊天内容
     int CS_SEND_CHAT = 1040;
     int SC_SEND_CHAT = 1041;
+
+    // 最长路通知
+    int SC_MAX_ROAD_LENGTH_NOTICE = 1043;
+
+    // 最大士兵数通知
+    int SC_MAX_ROB_TIMES_NOTICE = 1045;
 }

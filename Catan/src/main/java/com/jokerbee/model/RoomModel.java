@@ -23,17 +23,25 @@ public class RoomModel {
     private GameStatus status;
 
     // 颜色 - 玩家id
-    private Map<String, String> colorMembers = new HashMap<>();
+    private final Map<String, String> colorMembers = new HashMap<>();
 
     // roadKey - roleIndex
-    private Map<String, Integer> roadCache = new HashMap<>();
+    private final Map<String, Integer> roadCache = new HashMap<>();
 
     // roadKey - roleIndex
-    private Map<String, Integer> cityCache = new HashMap<>();
+    private final Map<String, Integer> cityCache = new HashMap<>();
 
     private String startExchangePlayerId = "";
     private JsonObject exchangeInfo;
     private String acceptExchangePlayerId = "";
+
+    // 最长路长度和最长路玩家id
+    private int maxRoadLength = -1;
+    private String maxRoadPlayerId = "";
+
+    // 最大士兵使用数量和玩家id
+    private int maxRobTimes = -1;
+    private String maxRobPlayerId = "";
 
     public int getRoomId() {
         return roomId;
@@ -143,5 +151,37 @@ public class RoomModel {
 
     public void setAcceptExchangePlayerId(String acceptExchangePlayerId) {
         this.acceptExchangePlayerId = acceptExchangePlayerId;
+    }
+
+    public int getMaxRoadLength() {
+        return maxRoadLength;
+    }
+
+    public void setMaxRoadLength(int maxRoadLength) {
+        this.maxRoadLength = maxRoadLength;
+    }
+
+    public String getMaxRoadPlayerId() {
+        return maxRoadPlayerId;
+    }
+
+    public void setMaxRoadPlayerId(String maxRoadPlayerId) {
+        this.maxRoadPlayerId = maxRoadPlayerId;
+    }
+
+    public int getMaxRobTimes() {
+        return maxRobTimes;
+    }
+
+    public void setMaxRobTimes(int maxRobTimes) {
+        this.maxRobTimes = maxRobTimes;
+    }
+
+    public String getMaxRobPlayerId() {
+        return maxRobPlayerId;
+    }
+
+    public void setMaxRobPlayerId(String maxRobPlayerId) {
+        this.maxRobPlayerId = maxRobPlayerId;
     }
 }

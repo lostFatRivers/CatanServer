@@ -26,4 +26,9 @@ public interface Constants {
     String API_RESUME_EXCHANGE_PRE = "resumeExchange_";
     String API_CONFIRM_EXCHANGE_PRE = "confirmExchange_";
     String API_SEND_CHAT_PRE = "sendChat_";
+
+    // 最长路的最短标准
+    int MAX_ROAD_LENGTH_LIMIT = 4;
+    // 最大士兵次数标准
+    int MAX_ROB_TIMES_LIMIT = 2;
 }
