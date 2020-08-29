@@ -213,6 +213,7 @@ public class RoomVerticle extends AbstractVerticle {
         JsonObject gameRoomData = new JsonObject();
         gameRoomData.put("type", MessageType.SC_START_GAME)
                 .put("roomId", room.getRoomId())
+                .put("roomMaster", room.getMasterId())
                 .put("seed", randomGameSeed());
 
         Map<String, String> members = room.getMembers();
@@ -360,12 +361,14 @@ public class RoomVerticle extends AbstractVerticle {
         }
         if (roadLength > roadLimit) {
             room.setMaxRoadLength(roadLength);
-            room.setMaxRoadPlayerId(playerId);
+            if (!room.getMaxRoadPlayerId().equals(playerId)) {
+                room.setMaxRoadPlayerId(playerId);
 
-            JsonObject result = new JsonObject().put("type", MessageType.SC_MAX_ROAD_LENGTH_NOTICE);
-            result.put("roleIndex", player.getRoleIndex())
-                    .put("roadLength", roadLength);
-            room.sendToAllPlayer(result);
+                JsonObject result = new JsonObject().put("type", MessageType.SC_MAX_ROAD_LENGTH_NOTICE);
+                result.put("roleIndex", player.getRoleIndex())
+                        .put("roadLength", roadLength);
+                room.sendToAllPlayer(result);
+            }
         }
         // 最大士兵数通知
         int robLimit = Constants.MAX_ROB_TIMES_LIMIT;
@@ -374,12 +377,13 @@ public class RoomVerticle extends AbstractVerticle {
         }
         if (robTimes > robLimit) {
             room.setMaxRobTimes(robTimes);
-            room.setMaxRobPlayerId(playerId);
-
-            JsonObject result = new JsonObject().put("type", MessageType.SC_MAX_ROB_TIMES_NOTICE);
-            result.put("roleIndex", player.getRoleIndex())
-                    .put("robTimes", robTimes);
-            room.sendToAllPlayer(result);
+            if (!room.getMaxRobPlayerId().equals(playerId)) {
+                room.setMaxRobPlayerId(playerId);
+                JsonObject result = new JsonObject().put("type", MessageType.SC_MAX_ROB_TIMES_NOTICE);
+                result.put("roleIndex", player.getRoleIndex())
+                        .put("robTimes", robTimes);
+                room.sendToAllPlayer(result);
+            }
         }
 
         JsonObject result = new JsonObject().put("type", MessageType.SC_SYNC_ROLE_VIEW);
