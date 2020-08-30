@@ -1,5 +1,6 @@
 package com.jokerbee.model;
 
+import com.jokerbee.consts.Constants;
 import com.jokerbee.consts.GameStatus;
 import com.jokerbee.consts.MessageType;
 import com.jokerbee.player.Player;
@@ -42,6 +43,8 @@ public class RoomModel {
     // 最大士兵使用数量和玩家id
     private int maxRobTimes = -1;
     private String maxRobPlayerId = "";
+
+    private List<Integer> robRoleIndex = new ArrayList<>();
 
     public int getRoomId() {
         return roomId;
@@ -127,6 +130,21 @@ public class RoomModel {
         }
         cityCache.put(cityKey, roleIndex);
         return true;
+    }
+
+    public List<Player> getCanRobRoles() {
+        List<Player> list = new ArrayList<>();
+        members.keySet().forEach(eachPlayerId -> {
+            Player player = PlayerManager.getInstance().getPlayer(eachPlayerId);
+            if (player.getSourceNumber() > Constants.ROB_DICE_NUMBER) {
+                list.add(player);
+            }
+        });
+        return list;
+    }
+
+    public void addRobRole(int roleIndex) {
+        robRoleIndex.add(roleIndex);
     }
 
     public JsonObject getExchangeInfo() {

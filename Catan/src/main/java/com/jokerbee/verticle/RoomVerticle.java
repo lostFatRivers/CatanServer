@@ -103,6 +103,7 @@ public class RoomVerticle extends AbstractVerticle {
         this.<String>registerConsumer(room, Constants.API_RESUME_EXCHANGE_PRE + roomId, msg -> this.resumeExchange(roomId, msg));
         this.<JsonObject>registerConsumer(room, Constants.API_CONFIRM_EXCHANGE_PRE + roomId, msg -> this.confirmExchange(roomId, msg));
         this.<JsonObject>registerConsumer(room, Constants.API_SEND_CHAT_PRE + roomId, msg -> this.sendChat(roomId, msg));
+        this.<JsonObject>registerConsumer(room, Constants.API_SYS_ROB_OUT_PRE + roomId, msg -> this.robOutSource(roomId, msg));
     }
 
     private <T> void registerConsumer(RoomModel room, String address, Handler<Message<T>> handler) {
@@ -329,6 +330,18 @@ public class RoomVerticle extends AbstractVerticle {
                 .put("diceNum1", dice1)
                 .put("diceNum2", dice2);
         room.sendToAllPlayer(result);
+
+        // 被抢人
+        JsonObject robMsg = new JsonObject().put("type", MessageType.SC_SYSTEM_ROB);
+        JsonArray roles = new JsonArray();
+        List<Player> robRoles = room.getCanRobRoles();
+        for (Player robRole : robRoles) {
+            room.addRobRole(robRole.getRoleIndex());
+            roles.add(new JsonObject().put("roleIndex", robRole.getRoleIndex())
+                    .put("totalSourceNum", robRole.getSourceNumber()));
+        }
+        robMsg.put("robRoles", roles);
+        room.sendToAllPlayer(robMsg);
     }
 
     private void turnNext(int roomId, Message<String> msg) {
@@ -354,6 +367,8 @@ public class RoomVerticle extends AbstractVerticle {
         if (room == null) {
             return;
         }
+        player.setSourceNumber(sourceCardNum);
+        player.setRobTimes(robTimes);
         // 最长路通知
         int roadLimit = Constants.MAX_ROAD_LENGTH_LIMIT;
         if (StringUtils.isNotEmpty(room.getMaxRoadPlayerId())) {
@@ -544,4 +559,7 @@ public class RoomVerticle extends AbstractVerticle {
         room.sendToAllPlayer(result);
     }
 
+    private void robOutSource(int roomId, Message<JsonObject> msg) {
+
+    }
 }

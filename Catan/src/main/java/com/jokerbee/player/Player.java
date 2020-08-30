@@ -32,6 +32,8 @@ public class Player {
 
     private int robTimes = 0;
 
+    private int sourceNumber = 0;
+
     public Player(ServerWebSocket webSocket) {
         connector = webSocket;
         webSocket.textMessageHandler(this::messageHandler);
@@ -135,6 +137,14 @@ public class Player {
 
     public void setRobTimes(int robTimes) {
         this.robTimes = robTimes;
+    }
+
+    public int getSourceNumber() {
+        return sourceNumber;
+    }
+
+    public void setSourceNumber(int sourceNumber) {
+        this.sourceNumber = sourceNumber;
     }
 
     public void destroy() {

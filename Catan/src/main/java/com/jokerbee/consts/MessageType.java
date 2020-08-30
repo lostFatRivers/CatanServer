@@ -91,4 +91,11 @@ public interface MessageType {
 
     // 最大士兵数通知
     int SC_MAX_ROB_TIMES_NOTICE = 1045;
+
+    // 开始被抢
+    int SC_SYSTEM_ROB = 1047;
+
+    // 聊天内容
+    int CS_ROB_OUT_SOURCE = 1048;
+    int SC_ROB_OUT_SOURCE = 1049;
 }

@@ -252,4 +252,14 @@ public class GameModule extends AbstractModule {
         JsonObject msg = new JsonObject().put("nickName", message.getString("nickName")).put("chatMsg", message.getString("chatMsg"));
         vertx.eventBus().send(Constants.API_SEND_CHAT_PRE + player.getRoomId(), msg);
     }
+
+    @MessageHandler(code = MessageType.CS_ROB_OUT_SOURCE)
+    private void sysRobOut(Player player, JsonObject message) throws Exception {
+        logger.info("player system rob out source.");
+        if (player.getRoomId() <= 0 || player.getRoleIndex() != message.getInteger("roleIndex")) {
+            logger.error("player system rob out error.");
+            return;
+        }
+        vertx.eventBus().send(Constants.API_SEND_CHAT_PRE + player.getRoomId(), message);
+    }
 }
