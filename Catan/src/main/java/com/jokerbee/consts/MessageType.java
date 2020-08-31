@@ -106,11 +106,11 @@ public interface MessageType {
     int CS_ROBBER_PUT_MAP = 1052;
     int SC_ROBBER_PUT_MAP = 1053;
 
-    // 海盗放在地块
+    // 玩家选择了抢劫目标
     int CS_PLAYER_SELECTED_ROB_TARGET = 1054;
     int SC_PLAYER_SELECTED_ROB_TARGET = 1055;
 
-    // 海盗放在地块
+    // 被抢劫玩家返回资源类型
     int CS_PLAYER_ROB_TARGET_BACK = 1056;
     int SC_PLAYER_ROB_TARGET_BACK = 1057;
 }
