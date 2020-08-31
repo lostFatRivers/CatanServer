@@ -44,7 +44,7 @@ public class RoomModel {
     private int maxRobTimes = -1;
     private String maxRobPlayerId = "";
 
-    private List<Integer> robRoleIndex = new ArrayList<>();
+    private List<Integer> robRoleIndexList = new ArrayList<>();
 
     public int getRoomId() {
         return roomId;
@@ -144,7 +144,20 @@ public class RoomModel {
     }
 
     public void addRobRole(int roleIndex) {
-        robRoleIndex.add(roleIndex);
+        robRoleIndexList.add(roleIndex);
+    }
+
+    public void removeRobRole(int roleIndex) {
+        robRoleIndexList.remove((Object)roleIndex);
+    }
+
+    public boolean sysRobFinished() {
+        return robRoleIndexList.isEmpty();
+    }
+
+    public void clearRobData() {
+        robRoleIndexList.clear();
+
     }
 
     public JsonObject getExchangeInfo() {

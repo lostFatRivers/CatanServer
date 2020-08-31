@@ -285,12 +285,10 @@ public class RoomVerticle extends AbstractVerticle {
         String playerId = data.getString("playerId");
         Player player = PlayerManager.getInstance().getPlayer(playerId);
         RoomModel room = rooms.get(roomId);
-        if (room == null) {
+        if (room == null || !room.cacheRoadOwner(roadKey, roleIndex)) {
             player.sendErrorMessage("房间异常.");
             return;
         }
-        room.cacheRoadOwner(roadKey, roleIndex);
-
         JsonObject result = new JsonObject().put("type", MessageType.SC_BUILD_ROAD)
                 .put("roadKey", roadKey)
                 .put("roleIndex", roleIndex);
@@ -305,12 +303,10 @@ public class RoomVerticle extends AbstractVerticle {
         String playerId = data.getString("playerId");
         Player player = PlayerManager.getInstance().getPlayer(playerId);
         RoomModel room = rooms.get(roomId);
-        if (room == null) {
+        if (room == null || !room.cacheCityOwner(cityKey, roleIndex)) {
             player.sendErrorMessage("房间异常.");
             return;
         }
-        room.cacheCityOwner(cityKey, roleIndex);
-
         JsonObject result = new JsonObject().put("type", MessageType.SC_BUILD_CITY)
                 .put("cityKey", cityKey)
                 .put("roleIndex", roleIndex)
@@ -332,6 +328,9 @@ public class RoomVerticle extends AbstractVerticle {
         room.sendToAllPlayer(result);
 
         // 被抢人
+        if (dice1 + dice2 != Constants.ROB_DICE_NUMBER) {
+            return;
+        }
         JsonObject robMsg = new JsonObject().put("type", MessageType.SC_SYSTEM_ROB);
         JsonArray roles = new JsonArray();
         List<Player> robRoles = room.getCanRobRoles();
@@ -350,6 +349,7 @@ public class RoomVerticle extends AbstractVerticle {
             logger.info("not exist room:{}", roomId);
             return;
         }
+        room.clearRobData();
         JsonObject result = new JsonObject().put("type", MessageType.SC_TURN_NEXT_ONE);
         room.sendToAllPlayer(result);
     }
@@ -560,6 +560,28 @@ public class RoomVerticle extends AbstractVerticle {
     }
 
     private void robOutSource(int roomId, Message<JsonObject> msg) {
+        JsonObject data = msg.body();
+        String playerId = data.getString("playerId");
+        int brickNum = data.getInteger("brickNum", 0);
+        int riceNum = data.getInteger("riceNum", 0);
+        int sheepNum = data.getInteger("sheepNum", 0);
+        int stoneNum = data.getInteger("stoneNum", 0);
+        int woodNum = data.getInteger("woodNum", 0);
 
+        Player player = PlayerManager.getInstance().getPlayer(playerId);
+        RoomModel room = rooms.get(roomId);
+        if (room == null) {
+            return;
+        }
+        JsonObject result = new JsonObject().put("type", MessageType.SC_ROB_OUT_SOURCE)
+                .put("roleIndex", player.getRoleIndex())
+                .put("brickNum", brickNum).put("riceNum", riceNum).put("sheepNum", sheepNum)
+                .put("stoneNum", stoneNum).put("woodNum", woodNum);
+        room.sendToAllPlayer(result);
+
+        room.removeRobRole(player.getRoleIndex());
+        if (room.sysRobFinished()) {
+            room.sendToAllPlayer(new JsonObject().put("type", MessageType.SC_SYSTEM_ROB_FINISHED));
+        }
     }
 }

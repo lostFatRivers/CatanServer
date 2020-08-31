@@ -95,7 +95,22 @@ public interface MessageType {
     // 开始被抢
     int SC_SYSTEM_ROB = 1047;
 
-    // 聊天内容
+    // 被抢
     int CS_ROB_OUT_SOURCE = 1048;
     int SC_ROB_OUT_SOURCE = 1049;
+
+    // 被抢结束
+    int SC_SYSTEM_ROB_FINISHED = 1051;
+
+    // 海盗放在地块
+    int CS_ROBBER_PUT_MAP = 1052;
+    int SC_ROBBER_PUT_MAP = 1053;
+
+    // 海盗放在地块
+    int CS_PLAYER_SELECTED_ROB_TARGET = 1054;
+    int SC_PLAYER_SELECTED_ROB_TARGET = 1055;
+
+    // 海盗放在地块
+    int CS_PLAYER_ROB_TARGET_BACK = 1056;
+    int SC_PLAYER_ROB_TARGET_BACK = 1057;
 }

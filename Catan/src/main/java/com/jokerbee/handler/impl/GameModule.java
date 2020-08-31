@@ -260,6 +260,13 @@ public class GameModule extends AbstractModule {
             logger.error("player system rob out error.");
             return;
         }
-        vertx.eventBus().send(Constants.API_SEND_CHAT_PRE + player.getRoomId(), message);
+        JsonObject msg = new JsonObject()
+                .put("playerId", player.getPlayerId())
+                .put("brickNum", message.getInteger("brickNum", 0))
+                .put("riceNum", message.getInteger("riceNum", 0))
+                .put("sheepNum", message.getInteger("sheepNum", 0))
+                .put("stoneNum", message.getInteger("stoneNum", 0))
+                .put("woodNum", message.getInteger("woodNum", 0));
+        vertx.eventBus().send(Constants.API_SYS_ROB_OUT_PRE + player.getRoomId(), msg);
     }
 }
