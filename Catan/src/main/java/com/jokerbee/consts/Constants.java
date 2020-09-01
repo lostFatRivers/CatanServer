@@ -27,6 +27,11 @@ public interface Constants {
     String API_CONFIRM_EXCHANGE_PRE = "confirmExchange_";
     String API_SEND_CHAT_PRE = "sendChat_";
     String API_SYS_ROB_OUT_PRE = "systemRobOut_";
+    String API_PUT_ROBBER_PRE = "putRobber_";
+    String API_PLAYER_SELECT_ROB_TARGET_PRE = "playerSelectRobTarget_";
+    String API_PLAYER_ROB_BACK_PRE = "playerRobBack_";
+    String API_USE_SKILL_CARD_PRE = "useSkill_";
+
 
     // 最长路的最短标准
     int MAX_ROAD_LENGTH_LIMIT = 4;
@@ -35,4 +40,18 @@ public interface Constants {
 
     // 被抢数量
     int ROB_DICE_NUMBER = 7;
+
+    // 技能类型
+    interface SkillType {
+        // 士兵
+        int SOLDIER = 1;
+        // 道路建设
+        int ROAD_BUILDING = 2;
+        // 丰收之年
+        int GOOD_HARVEST = 3;
+        // 垄断
+        int MONOPOLY = 4;
+        // 分数 1 点
+        int SCORE = 5;
+    }
 }

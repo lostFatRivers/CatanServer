@@ -44,7 +44,11 @@ public class RoomModel {
     private int maxRobTimes = -1;
     private String maxRobPlayerId = "";
 
-    private List<Integer> robRoleIndexList = new ArrayList<>();
+    // 摇到7时爆牌的玩家
+    private final List<Integer> robRoleIndexList = new ArrayList<>();
+
+    // 抢劫他人的玩家id
+    private String robPlayerId;
 
     public int getRoomId() {
         return roomId;
@@ -157,7 +161,7 @@ public class RoomModel {
 
     public void clearRobData() {
         robRoleIndexList.clear();
-
+        robPlayerId = "";
     }
 
     public JsonObject getExchangeInfo() {
@@ -214,5 +218,13 @@ public class RoomModel {
 
     public void setMaxRobPlayerId(String maxRobPlayerId) {
         this.maxRobPlayerId = maxRobPlayerId;
+    }
+
+    public String getRobPlayerId() {
+        return robPlayerId;
+    }
+
+    public void setRobPlayerId(String robPlayerId) {
+        this.robPlayerId = robPlayerId;
     }
 }

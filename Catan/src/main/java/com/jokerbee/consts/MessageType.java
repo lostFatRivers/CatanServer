@@ -113,4 +113,8 @@ public interface MessageType {
     // 被抢劫玩家返回资源类型
     int CS_PLAYER_ROB_TARGET_BACK = 1056;
     int SC_PLAYER_ROB_TARGET_BACK = 1057;
+
+    // 使用技能卡
+    int CS_USE_SKILL_CARD = 1058;
+    int SC_USE_SKILL_CARD = 1059;
 }

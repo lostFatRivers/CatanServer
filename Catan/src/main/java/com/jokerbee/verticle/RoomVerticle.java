@@ -95,7 +95,7 @@ public class RoomVerticle extends AbstractVerticle {
         this.<JsonObject>registerConsumer(room, Constants.API_BUILD_ROAD_PRE + roomId, msg -> this.buildRoad(roomId, msg));
         this.<JsonObject>registerConsumer(room, Constants.API_BUILD_CITY_PRE + roomId, msg -> this.buildCity(roomId, msg));
         this.<JsonObject>registerConsumer(room, Constants.API_THROW_DICE_PRE + roomId, msg -> this.syncDice(roomId, msg));
-        this.<String>registerConsumer(room, Constants.API_TURN_NEXT_PRE + roomId, msg -> this.turnNext(roomId, msg));
+        this.<String>registerConsumer(room, Constants.API_TURN_NEXT_PRE + roomId, msg -> this.turnNext(roomId));
         this.<JsonObject>registerConsumer(room, Constants.API_SYNC_ROLE_PRE + roomId, msg -> this.syncRole(roomId, msg));
         this.<JsonObject>registerConsumer(room, Constants.API_START_EXCHANGE_PRE + roomId, msg -> this.startExchange(roomId, msg));
         this.<String>registerConsumer(room, Constants.API_CLOSE_EXCHANGE_PRE + roomId, msg -> this.closeExchange(roomId, msg));
@@ -104,6 +104,10 @@ public class RoomVerticle extends AbstractVerticle {
         this.<JsonObject>registerConsumer(room, Constants.API_CONFIRM_EXCHANGE_PRE + roomId, msg -> this.confirmExchange(roomId, msg));
         this.<JsonObject>registerConsumer(room, Constants.API_SEND_CHAT_PRE + roomId, msg -> this.sendChat(roomId, msg));
         this.<JsonObject>registerConsumer(room, Constants.API_SYS_ROB_OUT_PRE + roomId, msg -> this.robOutSource(roomId, msg));
+        this.<JsonObject>registerConsumer(room, Constants.API_PUT_ROBBER_PRE + roomId, msg -> this.putRobber(roomId, msg));
+        this.<JsonObject>registerConsumer(room, Constants.API_PLAYER_SELECT_ROB_TARGET_PRE + roomId, msg -> this.playerSelectRobTarget(roomId, msg));
+        this.<JsonObject>registerConsumer(room, Constants.API_PLAYER_ROB_BACK_PRE + roomId, msg -> this.playerRobBack(roomId, msg));
+        this.<JsonObject>registerConsumer(room, Constants.API_USE_SKILL_CARD_PRE + roomId, msg -> this.useSkill(roomId, msg));
     }
 
     private <T> void registerConsumer(RoomModel room, String address, Handler<Message<T>> handler) {
@@ -316,6 +320,7 @@ public class RoomVerticle extends AbstractVerticle {
 
     private void syncDice(int roomId, Message<JsonObject> msg) {
         JsonObject data = msg.body();
+        String playerId = data.getString("playerId");
         int dice1 = data.getInteger("dice1");
         int dice2 = data.getInteger("dice2");
         RoomModel room = rooms.get(roomId);
@@ -331,6 +336,7 @@ public class RoomVerticle extends AbstractVerticle {
         if (dice1 + dice2 != Constants.ROB_DICE_NUMBER) {
             return;
         }
+        room.setRobPlayerId(playerId);
         JsonObject robMsg = new JsonObject().put("type", MessageType.SC_SYSTEM_ROB);
         JsonArray roles = new JsonArray();
         List<Player> robRoles = room.getCanRobRoles();
@@ -343,7 +349,7 @@ public class RoomVerticle extends AbstractVerticle {
         room.sendToAllPlayer(robMsg);
     }
 
-    private void turnNext(int roomId, Message<String> msg) {
+    private void turnNext(int roomId) {
         RoomModel room = rooms.get(roomId);
         if (room == null) {
             logger.info("not exist room:{}", roomId);
@@ -584,4 +590,72 @@ public class RoomVerticle extends AbstractVerticle {
             room.sendToAllPlayer(new JsonObject().put("type", MessageType.SC_SYSTEM_ROB_FINISHED));
         }
     }
+
+    private void putRobber(int roomId, Message<JsonObject> msg) {
+        JsonObject data = msg.body();
+        String playerId = data.getString("playerId");
+        int mapIndex = data.getInteger("mapIndex");
+        RoomModel room = rooms.get(roomId);
+        if (room == null) {
+            return;
+        }
+        if (!playerId.equals(room.getRobPlayerId())) {
+            return;
+        }
+        JsonObject result = new JsonObject().put("type", MessageType.SC_ROBBER_PUT_MAP)
+                .put("mapIndex", mapIndex);
+        room.sendToAllPlayer(result);
+    }
+
+    private void playerSelectRobTarget(int roomId, Message<JsonObject> msg) {
+        JsonObject data = msg.body();
+        String playerId = data.getString("playerId");
+        int targetIndex = data.getInteger("targetIndex");
+        RoomModel room = rooms.get(roomId);
+        if (room == null) {
+            return;
+        }
+        if (!playerId.equals(room.getRobPlayerId())) {
+            return;
+        }
+        JsonObject result = new JsonObject().put("type", MessageType.SC_PLAYER_SELECTED_ROB_TARGET)
+                .put("roleIndex", targetIndex);
+        room.sendToAllPlayer(result);
+    }
+
+    private void playerRobBack(int roomId, Message<JsonObject> msg) {
+        JsonObject data = msg.body();
+        String playerId = data.getString("playerId");
+        String sourceType = data.getString("sourceType");
+        logger.debug("player been robbed, id:{}, sourceType:{}", playerId, sourceType);
+        RoomModel room = rooms.get(roomId);
+        if (room == null) {
+            return;
+        }
+        String robPlayerId = room.getRobPlayerId();
+        if (StringUtils.isEmpty(robPlayerId)) {
+            return;
+        }
+        Player robPlayer = PlayerManager.getInstance().getPlayer(robPlayerId);
+        JsonObject result = new JsonObject().put("type", MessageType.SC_PLAYER_ROB_TARGET_BACK)
+                .put("roleIndex", robPlayer.getRoleIndex())
+                .put("sourceType", sourceType);
+        room.sendToAllPlayer(result);
+    }
+
+    private void useSkill(int roomId, Message<JsonObject> msg) {
+        JsonObject data = msg.body();
+        String playerId = data.getString("playerId");
+        int cardType = data.getInteger("cardType");
+        String cardParam = data.getString("cardParam");
+        logger.info("player use card:{}, param:{}", cardType, cardParam);
+        RoomModel room = rooms.get(roomId);
+        if (room == null) {
+            return;
+        }
+        if (cardType == Constants.SkillType.SOLDIER) {
+            room.setRobPlayerId(playerId);
+        }
+    }
+
 }

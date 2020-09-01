@@ -269,4 +269,57 @@ public class GameModule extends AbstractModule {
                 .put("woodNum", message.getInteger("woodNum", 0));
         vertx.eventBus().send(Constants.API_SYS_ROB_OUT_PRE + player.getRoomId(), msg);
     }
+
+    @MessageHandler(code = MessageType.CS_ROBBER_PUT_MAP)
+    private void putRobber(Player player, JsonObject message) throws Exception {
+        logger.info("player put rob on map.");
+        if (player.getRoomId() <= 0 || message.getInteger("mapIndex") == null) {
+            logger.error("player put rob on map error.");
+            return;
+        }
+        JsonObject msg = new JsonObject()
+                .put("playerId", player.getPlayerId())
+                .put("mapIndex", message.getInteger("mapIndex"));
+        vertx.eventBus().send(Constants.API_PUT_ROBBER_PRE + player.getRoomId(), msg);
+    }
+
+    @MessageHandler(code = MessageType.CS_PLAYER_SELECTED_ROB_TARGET)
+    private void playerSelectRobTarget(Player player, JsonObject message) throws Exception {
+        logger.info("player select rob target.");
+        if (player.getRoomId() <= 0 || message.getInteger("targetIndex") == null) {
+            logger.error("player select rob target error.");
+            return;
+        }
+        JsonObject msg = new JsonObject()
+                .put("playerId", player.getPlayerId())
+                .put("targetIndex", message.getInteger("targetIndex"));
+        vertx.eventBus().send(Constants.API_PLAYER_SELECT_ROB_TARGET_PRE + player.getRoomId(), msg);
+    }
+
+    @MessageHandler(code = MessageType.CS_PLAYER_ROB_TARGET_BACK)
+    private void playerRobBack(Player player, JsonObject message) throws Exception {
+        logger.info("player robbed back target.");
+        if (player.getRoomId() <= 0 || !message.containsKey("sourceType")) {
+            logger.error("player robbed back target.");
+            return;
+        }
+        JsonObject msg = new JsonObject()
+                .put("playerId", player.getPlayerId())
+                .put("sourceType", message.getString("sourceType"));
+        vertx.eventBus().send(Constants.API_PLAYER_ROB_BACK_PRE + player.getRoomId(), msg);
+    }
+
+    @MessageHandler(code = MessageType.CS_USE_SKILL_CARD)
+    private void useSkill(Player player, JsonObject message) throws Exception {
+        logger.info("player use skill.");
+        if (player.getRoomId() <= 0 || message.getInteger("cardType") == null) {
+            logger.error("player use skill error.");
+            return;
+        }
+        JsonObject msg = new JsonObject()
+                .put("playerId", player.getPlayerId())
+                .put("cardType", message.getInteger("cardType"))
+                .put("cardParam", message.getString("cardParam"));
+        vertx.eventBus().send(Constants.API_USE_SKILL_CARD_PRE + player.getRoomId(), msg);
+    }
 }
