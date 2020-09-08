@@ -117,4 +117,8 @@ public interface MessageType {
     // 使用技能卡
     int CS_USE_SKILL_CARD = 1058;
     int SC_USE_SKILL_CARD = 1059;
+
+    // 获取技能卡
+    int CS_GET_SKILL_CARD = 1060;
+    int SC_GET_SKILL_CARD = 1061;
 }

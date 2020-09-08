@@ -322,4 +322,16 @@ public class GameModule extends AbstractModule {
                 .put("cardParam", message.getString("cardParam"));
         vertx.eventBus().send(Constants.API_USE_SKILL_CARD_PRE + player.getRoomId(), msg);
     }
+
+    @MessageHandler(code = MessageType.CS_GET_SKILL_CARD)
+    private void getSkill(Player player, JsonObject message) throws Exception {
+        logger.info("player get skill.");
+        if (player.getRoomId() <= 0) {
+            logger.error("player get skill error.");
+            return;
+        }
+        JsonObject msg = new JsonObject()
+                .put("playerId", player.getPlayerId());
+        vertx.eventBus().send(Constants.API_GET_SKILL_CARD_PRE + player.getRoomId(), msg);
+    }
 }

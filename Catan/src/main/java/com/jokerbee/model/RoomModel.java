@@ -32,6 +32,9 @@ public class RoomModel {
     // roadKey - roleIndex
     private final Map<String, Integer> cityCache = new HashMap<>();
 
+    private final List<Integer> skillList = new ArrayList<>();
+    private int skillIndex = 0;
+
     private String startExchangePlayerId = "";
     private JsonObject exchangeInfo;
     private String acceptExchangePlayerId = "";
@@ -226,5 +229,9 @@ public class RoomModel {
 
     public void setRobPlayerId(String robPlayerId) {
         this.robPlayerId = robPlayerId;
+    }
+
+    public int lastSkillNum() {
+        return skillList.size() - skillIndex;
     }
 }

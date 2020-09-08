@@ -31,6 +31,7 @@ public interface Constants {
     String API_PLAYER_SELECT_ROB_TARGET_PRE = "playerSelectRobTarget_";
     String API_PLAYER_ROB_BACK_PRE = "playerRobBack_";
     String API_USE_SKILL_CARD_PRE = "useSkill_";
+    String API_GET_SKILL_CARD_PRE = "getSkill_";
 
 
     // 最长路的最短标准

@@ -108,6 +108,7 @@ public class RoomVerticle extends AbstractVerticle {
         this.<JsonObject>registerConsumer(room, Constants.API_PLAYER_SELECT_ROB_TARGET_PRE + roomId, msg -> this.playerSelectRobTarget(roomId, msg));
         this.<JsonObject>registerConsumer(room, Constants.API_PLAYER_ROB_BACK_PRE + roomId, msg -> this.playerRobBack(roomId, msg));
         this.<JsonObject>registerConsumer(room, Constants.API_USE_SKILL_CARD_PRE + roomId, msg -> this.useSkill(roomId, msg));
+        this.<JsonObject>registerConsumer(room, Constants.API_GET_SKILL_CARD_PRE + roomId, msg -> this.getSkill(roomId, msg));
     }
 
     private <T> void registerConsumer(RoomModel room, String address, Handler<Message<T>> handler) {
@@ -636,9 +637,12 @@ public class RoomVerticle extends AbstractVerticle {
         if (StringUtils.isEmpty(robPlayerId)) {
             return;
         }
+        Player robbedPlayer = PlayerManager.getInstance().getPlayer(playerId);
         Player robPlayer = PlayerManager.getInstance().getPlayer(robPlayerId);
         JsonObject result = new JsonObject().put("type", MessageType.SC_PLAYER_ROB_TARGET_BACK)
                 .put("roleIndex", robPlayer.getRoleIndex())
+                .put("robbedName", robbedPlayer.getPlayerName())
+                .put("robName", robPlayer.getPlayerName())
                 .put("sourceType", sourceType);
         room.sendToAllPlayer(result);
     }
@@ -656,6 +660,22 @@ public class RoomVerticle extends AbstractVerticle {
         if (cardType == Constants.SkillType.SOLDIER) {
             room.setRobPlayerId(playerId);
         }
+        Player player = PlayerManager.getInstance().getPlayer(playerId);
+        JsonObject result = new JsonObject().put("type", MessageType.SC_USE_SKILL_CARD)
+                .put("roleIndex", player.getRoleIndex())
+                .put("cardType", cardType);
+        room.sendToAllPlayer(result);
     }
 
+    private void getSkill(int roomId, Message<JsonObject> msg) {
+        JsonObject data = msg.body();
+        String playerId = data.getString("playerId");
+        RoomModel room = rooms.get(roomId);
+        if (room == null) {
+            return;
+        }
+        if (room.lastSkillNum() <= 0) {
+
+        }
+    }
 }
