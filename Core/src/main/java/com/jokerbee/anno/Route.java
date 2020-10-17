@@ -12,7 +12,7 @@ public @interface Route {
     /**
      * request path.
      * <p>
-     * example: '/player/name'
+     * example: '/player/path'
      * </p>
      * @return path;
      */

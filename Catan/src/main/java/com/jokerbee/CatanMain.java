@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 
 public class CatanMain {
     static {
-        System.setProperty("vertx.logger-delegate-factory-class-name", "io.vertx.core.logging.SLF4JLogDelegateFactory");
+        System.setProperty("vertx.logger-delegate-factory-class-path", "io.vertx.core.logging.SLF4JLogDelegateFactory");
     }
 
     private static final Logger logger = LoggerFactory.getLogger("Console");

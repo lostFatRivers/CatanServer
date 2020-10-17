@@ -19,10 +19,10 @@ public class GameModule extends AbstractModule {
             return;
         }
         player.setPlayerId(playerId);
-        player.setPlayerName(message.getString("name"));
+        player.setPlayerName(message.getString("path"));
         PlayerManager.getInstance().catchPlayer(player);
 
-        logger.info("player enter server success, id:{}, name:{}", playerId, player.getPlayerName());
+        logger.info("player enter server success, id:{}, path:{}", playerId, player.getPlayerName());
         JsonObject result = new JsonObject();
         result.put("type", MessageType.SC_PLAYER_ENTER)
                 .put("enterSuccess", true);
