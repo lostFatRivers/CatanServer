@@ -5,7 +5,7 @@
   "rootPath":"io.vertx",
   "retry": {
     "initialSleepTime":100,
-    "intervalTimes":10000,
-    "maxTimes":5
+    "intervalTimes":1000,
+    "maxTimes":3
   }
 }

@@ -1,8 +1,9 @@
 package com.jokerbee;
 
 import com.jokerbee.handler.HandlerManager;
+import com.jokerbee.template.TemplateManager;
 import com.jokerbee.verticle.RoomVerticle;
-import com.jokerbee.verticle.WsServerVerticle;
+import com.jokerbee.verticle.GetWayVerticle;
 import io.vertx.config.ConfigRetriever;
 import io.vertx.config.ConfigRetrieverOptions;
 import io.vertx.config.ConfigStoreOptions;
@@ -27,6 +28,7 @@ public class CatanMain {
         vertx = Vertx.vertx();
 
         initHandlerManager(vertx);
+        initTemplateManager(vertx);
 
         loadConfig()
             .compose(CatanMain::deployVerticle)
@@ -42,6 +44,16 @@ public class CatanMain {
             HandlerManager.getInstance().init(vertx);
         } catch (Exception e) {
             logger.error("HandlerManager init error.", e);
+            vertx.close();
+        }
+    }
+
+    private static void initTemplateManager(Vertx vertx) {
+        try {
+            TemplateManager.getInstance().init();
+        } catch (Exception e) {
+            logger.error("HandlerManager init error.", e);
+            vertx.close();
         }
     }
 
@@ -51,22 +63,26 @@ public class CatanMain {
                 .setFormat("hocon")
                 .setConfig(new JsonObject().put("path", "catan.conf"));
 
-        return Future.future(pros -> {
-            ConfigRetriever retriever = ConfigRetriever.create(vertx, new ConfigRetrieverOptions().addStore(store));
-            retriever.getConfig(pros);
-        });
+        return Future.future(pros -> ConfigRetriever.create(vertx, new ConfigRetrieverOptions()
+                    .addStore(store))
+                    .getConfig(pros));
     }
 
+    /**
+     * Verticle 部署;
+     */
     private static Future<String> deployVerticle(JsonObject config) {
         logger.info("get server config:{}", config.encode());
         return Future.<String>future(pros -> {
+            // 网关启动
             JsonObject websocketConfig = config.getJsonObject("websocket");
             DeploymentOptions options = new DeploymentOptions()
                     .setWorkerPoolName("WebSocket")
                     .setInstances(websocketConfig.getInteger("instance"))
                     .setConfig(websocketConfig);
-            vertx.deployVerticle(WsServerVerticle.class.getName(), options, pros);
+            vertx.deployVerticle(GetWayVerticle.class.getName(), options, pros);
         }).compose(s -> Future.future(pros -> {
+            // 房间启动
             JsonObject roomConfig = config.getJsonObject("room");
             DeploymentOptions options = new DeploymentOptions()
                     .setWorkerPoolName("Room")

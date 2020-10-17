@@ -7,17 +7,11 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.ServerWebSocket;
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.Map;
-
-public class WsServerVerticle extends AbstractVerticle {
-    private static Logger logger = LoggerFactory.getLogger("WsServer");
-
-    private Map<String, Player> connectPlayers = new HashMap<>();
+public class GetWayVerticle extends AbstractVerticle {
+    private static final Logger logger = LoggerFactory.getLogger("WsServer");
 
     @Override
     public void start() {
@@ -47,11 +41,8 @@ public class WsServerVerticle extends AbstractVerticle {
         logger.info("websocket connect open: {}", textHandlerId);
 
         Player newPlayer = new Player(webSocket);
-        connectPlayers.put(textHandlerId, newPlayer);
-
         webSocket.closeHandler(v -> {
             logger.info("websocket connect closed: {}", textHandlerId);
-            connectPlayers.remove(textHandlerId);
             int createRoomId = newPlayer.getCreateRoom();
             if (createRoomId > 0) {
                 vertx.eventBus().send(Constants.API_DELETE_ROOM_PRE + createRoomId, "");

@@ -1,24 +1,15 @@
 package com.jokerbee.db;
 
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
+import com.jokerbee.db.manager.DBManager;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.EventBusOptions;
 import io.vertx.core.spi.cluster.ClusterManager;
 import io.vertx.spi.cluster.zookeeper.ZookeeperClusterManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.sql.DataSource;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.Properties;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * DB服务启动器;
@@ -32,7 +23,7 @@ public class DBMain {
         System.setProperty("vertx.logger-delegate-factory-class-name", "io.vertx.core.logging.SLF4JLogDelegateFactory");
     }
 
-    private static final Logger LOG = LoggerFactory.getLogger("DB");
+    private static final Logger logger = LoggerFactory.getLogger("DB");
 
     public static void main(String[] args) {
         ClusterManager manager = new ZookeeperClusterManager();
@@ -42,29 +33,28 @@ public class DBMain {
         Vertx.clusteredVertx(options, res -> {
             if (res.succeeded()) {
                 Vertx vertx = res.result();
-                databaseInit(vertx);
-                LOG.info("vertx start ok.");
+                try {
+                    DBManager.getInstance().init(vertx);
+                    testQueryRequest(vertx);
+                } catch (Exception e) {
+                    logger.error("db init failed.", e);
+                }
             } else {
-                LOG.error("cluster vertx start error", res.cause());
+                logger.error("cluster vertx start error", res.cause());
             }
         });
     }
 
-    private static void databaseInit(Vertx vertx) {
-        vertx.setTimer(1000, tid -> {
-            try {
-                InputStream stream = DBMain.class.getResourceAsStream("/jdbc.properties");
-                Properties properties = new Properties();
-                properties.load(stream);
-                DataSource dataSource = new HikariDataSource(new HikariConfig(properties));
-                Connection connection = dataSource.getConnection();
-                PreparedStatement statement = connection.prepareStatement("select name from account where id=1");
-                ResultSet resultSet = statement.executeQuery();
-                LOG.info("mysql and hikariCP start ok:{}", resultSet);
-                vertx.close();
-            } catch (Exception e) {
-                LOG.error("mysql start failed", e);
-            }
+    private static void testQueryRequest(Vertx vertx) {
+        AtomicInteger counter = new AtomicInteger(0);
+        vertx.setPeriodic(500, tid -> {
+            final int index = counter.incrementAndGet();
+            logger.info("start query entity:{}", index);
+            vertx.eventBus().request("queryEntity", "hello", res -> {
+                if (res.failed()) {
+                    logger.error("query entity failed. index:{}", index, res.cause());
+                }
+            });
         });
     }
 
