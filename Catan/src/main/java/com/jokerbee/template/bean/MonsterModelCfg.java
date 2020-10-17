@@ -2,9 +2,9 @@ package com.jokerbee.template.bean;
 
 
 /**
- **********************************
- * auto generated, do not modify! *
- **********************************
+ * ==================================
+ * = auto generated, do not modify! =
+ * ==================================
  */
 public class MonsterModelCfg {
     /** 唯一id */

@@ -2,9 +2,9 @@ package com.jokerbee.template.model;
 
 
 /**
- **********************************
- * auto generated, do not modify! *
- **********************************
+ * ==================================
+ * = auto generated, do not modify! =
+ * ==================================
  */
 public class CostResource {
     private int key;

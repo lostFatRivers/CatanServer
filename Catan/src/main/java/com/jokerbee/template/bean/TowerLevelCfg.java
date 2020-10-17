@@ -4,9 +4,9 @@ import java.util.List;
 import com.jokerbee.template.model.CostResource;
 
 /**
- **********************************
- * auto generated, do not modify! *
- **********************************
+ * ==================================
+ * = auto generated, do not modify! =
+ * ==================================
  */
 public class TowerLevelCfg {
     private int id;

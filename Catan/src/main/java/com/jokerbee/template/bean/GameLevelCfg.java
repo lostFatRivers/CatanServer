@@ -7,9 +7,9 @@ import com.jokerbee.template.model.WaveModel;
 import com.jokerbee.template.model.RewardModel;
 
 /**
- **********************************
- * auto generated, do not modify! *
- **********************************
+ * ==================================
+ * = auto generated, do not modify! =
+ * ==================================
  */
 public class GameLevelCfg {
     private int id;

@@ -3,9 +3,9 @@ package com.jokerbee.template.bean;
 import java.util.List;
 
 /**
- **********************************
- * auto generated, do not modify! *
- **********************************
+ * ==================================
+ * = auto generated, do not modify! =
+ * ==================================
  */
 public class GameParamsCfg {
     /** 减速的百分比 */
@@ -17,6 +17,7 @@ public class GameParamsCfg {
     /** 中毒伤害等级乘数 */
     private int poisonDamageRatio;
     
+    /** 测试list<int>字段 */
     private List<Integer> testListInt;
     
     public int getSlowRatio() {

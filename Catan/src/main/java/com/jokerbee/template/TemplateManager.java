@@ -55,16 +55,6 @@ public class TemplateManager {
         afterLoad();
     }
 
-    public static void main(String[] args) throws Exception {
-        TemplateManager.getInstance().init();
-        TimeUnit.SECONDS.sleep(2);
-
-        for (int i = 0; i < 10; i++) {
-            TemplateManager.getInstance().reload();
-            TimeUnit.SECONDS.sleep(2);
-        }
-    }
-
     private void afterLoad() {
         // 加载完后的处理
     }

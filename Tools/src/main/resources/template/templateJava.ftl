@@ -7,9 +7,9 @@ import ${eachPackage};
 </#if>
 
 /**
- **********************************
- * auto generated, do not modify! *
- **********************************
+ * ==================================
+ * = auto generated, do not modify! =
+ * ==================================
  */
 public class ${className} {
     <#if fieldModelList??>
