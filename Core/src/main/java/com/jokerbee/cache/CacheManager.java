@@ -1,12 +1,9 @@
 package com.jokerbee.cache;
 
 import io.vertx.core.json.JsonObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public enum CacheManager {
     INSTANCE;
-    private static Logger logger = LoggerFactory.getLogger("Handler");
 
     private RedisClient redisClient;
 

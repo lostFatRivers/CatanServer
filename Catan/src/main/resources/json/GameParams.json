@@ -1,0 +1,12 @@
+{
+    "slowRatio": 60,
+    "burnDamageRatio": 60,
+    "poisonDamageRatio": 80,
+    "testListInt": [
+        2,
+        4,
+        5,
+        6,
+        7
+    ]
+}

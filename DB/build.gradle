@@ -1,0 +1,21 @@
+def vertxVersion = "3.9.3"
+
+dependencies {
+    compile "io.vertx:vertx-core:${vertxVersion}"
+    compile("io.vertx:vertx-zookeeper:${vertxVersion}") {
+        exclude group: 'log4j'
+        exclude group: 'org.slf4j'
+    }
+
+    compile("org.apache.zookeeper:zookeeper:3.5.8") {
+        exclude group: 'log4j'
+        exclude group: 'org.slf4j'
+    }
+
+    compile "com.zaxxer:HikariCP:3.4.5"
+    compile "mysql:mysql-connector-java:8.0.21"
+
+    compile "commons-codec:commons-codec:1.14"
+    compile "org.apache.commons:commons-crypto:1.0.0"
+    compile "org.bouncycastle:bcprov-jdk15on:1.64"
+}

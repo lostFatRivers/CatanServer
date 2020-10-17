@@ -13,7 +13,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class RedisClient {
-	private static Logger logger = LoggerFactory.getLogger(RedisClient.class);
+	private static final Logger LOG = LoggerFactory.getLogger(RedisClient.class);
 
 	/** 获取redis锁成功 */
 	public static final String LOCK_SUCCESS = "OK";
@@ -30,19 +30,19 @@ public class RedisClient {
 	private Pool<Jedis> jedisPool;
 
 	/** 是否是集群模式 */
-	private boolean cluster;
+	private final boolean cluster;
 	/** 当为集群模式时, 为ip列表, 用','隔开 */
-	private String ip;
-	private int port;
+	private final String ip;
+	private final int port;
 	/** 集群名 */
-	private String masterName;
-	private String pwd;
+	private final String masterName;
+	private final String pwd;
 	/** 可用连接实例的最大数目，默认值为8 */
-	private int maxActive;
+	private final int maxActive;
 	/** 等待可用连接的最大时间，单位毫秒，默认值为-1，表示永不超时。如果超过等待时间，则直接抛出JedisConnectionException */
-	private long maxWait;
+	private final long maxWait;
 	/** socket读取输入InputStream的超时时间 */
-	private int timeout;
+	private final int timeout;
 
 	public RedisClient(boolean cluster, String ip, int port, String masterName, String pwd, int maxActive, long maxWait, int timeout) {
 		this.cluster = cluster;
@@ -71,14 +71,14 @@ public class RedisClient {
 			jedisPool = new JedisSentinelPool(masterName, sentinels, poolConfig, timeout, pwd);
 		} else {
 			jedisPool = new JedisPool(poolConfig, ip, port, timeout, pwd);
-			logger.info("redis client start, ip:{}, port:{}", ip, port);
+			LOG.info("redis client start, ip:{}, port:{}", ip, port);
 		}
 		try {
 			if (ping()) {
-				logger.info("redis client start ok...");
+				LOG.info("redis client start ok...");
 			}
 		} catch (Exception e) {
-			logger.info("redis client start failed...", e);
+			LOG.info("redis client start failed...", e);
 		}
 
 	}
@@ -521,7 +521,7 @@ public class RedisClient {
 			String result = jedis.set(key, requireId, SetParams.setParams().nx().px(3 * TimeUtil.SECOND_MILLIS));
 			return LOCK_SUCCESS.equals(result);
 		} catch (Exception e) {
-			logger.error("redis lock get failed, key:{}, requireId:{}", key, requireId, e);
+			LOG.error("redis lock get failed, key:{}, requireId:{}", key, requireId, e);
 			return false;
 		}
 	}
@@ -541,12 +541,12 @@ public class RedisClient {
 			Object result = jedis.eval(UNLOCK_SCRIPT, Collections.singletonList(key),
 					Collections.singletonList(requireId));
 			if (!UNLOCK_SUCCESS.equals(result)) {
-				logger.error("redis lock release failed, key:{}, result:{}", key, result);
+				LOG.error("redis lock release failed, key:{}, result:{}", key, result);
 				return false;
 			}
 			return true;
 		} catch (Exception e) {
-			logger.error("redis lock release failed, key:{}", key, e);
+			LOG.error("redis lock release failed, key:{}", key, e);
 			return false;
 		}
 	}

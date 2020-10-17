@@ -8,8 +8,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class AESDecodeHandlerImpl implements AESDecodeHandler {
-    private static Logger logger = LoggerFactory.getLogger("AESDecoder");
-    private String encryptKey;
+    private static final Logger logger = LoggerFactory.getLogger("AESDecoder");
+    private final String encryptKey;
 
     public AESDecodeHandlerImpl(String encryptKey) {
         this.encryptKey = encryptKey;
