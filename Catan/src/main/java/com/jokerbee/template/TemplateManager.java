@@ -51,11 +51,8 @@ public class TemplateManager {
     }
 
     public synchronized void init() throws Exception {
-        long startTime = TimeUtil.getTime();
-        logger.info("start");
         loadConfig();
         afterLoad();
-        logger.info("end, costTime:{}", TimeUtil.getTime() - startTime);
     }
 
     public static void main(String[] args) throws Exception {
