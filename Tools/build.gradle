@@ -12,6 +12,8 @@ dependencies {
     compile "org.apache.poi:poi:${poiVersion}"
     compile "org.apache.poi:poi-ooxml:${poiVersion}"
     compile "org.apache.poi:poi-ooxml-schemas:${poiVersion}"
+
+    compile "org.apache.kafka:kafka-clients:2.6.0"
 }
 
 jar {
