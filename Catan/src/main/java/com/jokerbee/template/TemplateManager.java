@@ -55,6 +55,19 @@ public class TemplateManager {
         afterLoad();
     }
 
+    /**
+     * 重新加载配置;
+     */
+    private void reloadConfig() {
+        TemplateManager newManager = new TemplateManager();
+        try {
+            newManager.init();
+            INSTANCE = newManager;
+        } catch (Exception e) {
+            logger.error("reload config error.", e);
+        }
+    }
+
     private void afterLoad() {
         // 加载完后的处理
     }
@@ -187,19 +200,6 @@ public class TemplateManager {
             logger.warn("json array size error. field:{}", field.getName());
         }
         field.set(this, dataList.get(0));
-    }
-
-    /**
-     * 重新加载配置;
-     */
-    private void reload() {
-        TemplateManager newManager = new TemplateManager();
-        try {
-            newManager.init();
-            INSTANCE = newManager;
-        } catch (Exception e) {
-            logger.error("reload config error.", e);
-        }
     }
 
 }

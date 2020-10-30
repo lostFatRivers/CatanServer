@@ -3,12 +3,12 @@ package com.jokerbee.db;
 import com.jokerbee.db.manager.DBManager;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
-import io.vertx.core.eventbus.EventBusOptions;
 import io.vertx.core.spi.cluster.ClusterManager;
-import io.vertx.spi.cluster.zookeeper.ZookeeperClusterManager;
+import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -24,11 +24,11 @@ public class DBMain {
     }
 
     private static final Logger logger = LoggerFactory.getLogger("DB");
+    private static long timerId = -1;
 
     public static void main(String[] args) {
-        ClusterManager manager = new ZookeeperClusterManager();
-        VertxOptions options = new VertxOptions().setClusterManager(manager)
-                .setEventBusOptions(new EventBusOptions().setHost("10.0.0.159"));
+        ClusterManager manager = new HazelcastClusterManager();
+        VertxOptions options = new VertxOptions().setClusterManager(manager);
 
         Vertx.clusteredVertx(options, res -> {
             if (res.succeeded()) {
@@ -39,24 +39,44 @@ public class DBMain {
                 } catch (Exception e) {
                     logger.error("db init failed.", e);
                 }
+                addShutdownOptional(vertx);
             } else {
                 logger.error("cluster vertx start error", res.cause());
             }
         });
+
+
     }
 
     private static void testQueryRequest(Vertx vertx) {
-        AtomicInteger counter = new AtomicInteger(0);
-        vertx.setPeriodic(500, tid -> {
-            final int index = counter.incrementAndGet();
-            logger.info("start query entity:{}", index);
+        timerId = vertx.setPeriodic(5000, tid -> {
             vertx.eventBus().request("queryEntity", "hello", res -> {
                 if (res.failed()) {
-                    logger.error("query entity failed. index:{}", index, res.cause());
+                    logger.error("query entity failed.", res.cause());
+                } else {
+                    logger.error("query entity success, index:{}", res.result().body().toString());
                 }
             });
         });
     }
 
-
+    private static void addShutdownOptional(Vertx vertx) {
+        new Thread(() -> {
+            try {
+                int read = System.in.read();
+                logger.info("read console input:{}", read);
+                if (read == 10) {
+                    logger.info("******************************************");
+                    logger.info("***                                    ***");
+                    logger.info("*****            Good bye            *****");
+                    logger.info("***                                    ***");
+                    logger.info("******************************************");
+                    vertx.cancelTimer(timerId);
+                    vertx.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }).start();
+    }
 }

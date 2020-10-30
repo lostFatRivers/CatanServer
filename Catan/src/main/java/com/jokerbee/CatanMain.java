@@ -10,6 +10,7 @@ import io.vertx.config.ConfigStoreOptions;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
+import io.vertx.core.VertxOptions;
 import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

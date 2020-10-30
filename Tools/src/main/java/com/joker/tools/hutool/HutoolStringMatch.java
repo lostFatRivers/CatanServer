@@ -21,13 +21,7 @@ public class HutoolStringMatch {
     private static final Logger logger = LoggerFactory.getLogger("Match");
 
     public static void main(String[] args) {
-        DeepWordTree deepWordTree = new DeepWordTree();
-        deepWordTree.setMatchDeep(2);
-        deepWordTree.addWord("杀人");
-        //deepWordTree.addWord("杀");
-
-        List<String> list = deepWordTree.matchAll("她杀了一人了");
-        logger.info("match list:{}", list);
+        filterWordsConfigMatch();
     }
 
     private static void matchWordTest() {
@@ -53,13 +47,7 @@ public class HutoolStringMatch {
         wordTree.addWord("伊藤润二");
         wordTree.addWord("特朗普");
 
-//        list.forEach(str -> logger.info("wordTree 测试结果 [{}] 是否屏蔽:{}", str, wordTree.matchAll(str, 1, false, false).size() > 0));
-
-        long startTime = System.currentTimeMillis();
-        for (String eachStr : list) {
-            wordTree.matchAll(eachStr, 1, true, true);
-        }
-        logger.info("all cost time:{}", System.currentTimeMillis() - startTime);
+        list.forEach(str -> logger.info("wordTree 测试结果 [{}] 是否屏蔽:{}", str, wordTree.matchAll(str, 1, false, false).size() > 0));
     }
 
     private static void deepWordTreeTest(List<String> list) {
@@ -80,7 +68,7 @@ public class HutoolStringMatch {
 
     private static List<String> loadFilterWords() {
         List<String> list = new ArrayList<>();
-        ExcelReader reader = ExcelUtil.getReader("屏蔽字库.xlsx", 1);
+        ExcelReader reader = ExcelUtil.getReader("F:/workspace/CellsAtWork/trunk/src/Tables/屏蔽字库.xlsx", 1);
         for (int i = 5; i < reader.getRowCount(); i++) {
             List<Object> row = reader.readRow(i);
             if (row.size() < 2) {

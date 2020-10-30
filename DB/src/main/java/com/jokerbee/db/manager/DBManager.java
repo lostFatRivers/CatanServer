@@ -15,6 +15,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * DB数据管理器;
@@ -29,6 +30,7 @@ public enum DBManager {
 
     private Vertx vertx;
     private DataSource dataSource;
+    private AtomicInteger counter = new AtomicInteger(0);
 
     public static DBManager getInstance() {
         return INSTANCE;
@@ -59,7 +61,7 @@ public enum DBManager {
                 logger.info("result:{}", resultSet.getString(1));
             }
             connection.close();
-            msg.reply("{}");
+            msg.reply(counter.getAndIncrement() + "");
         } catch (Exception e) {
             msg.fail(1, e.getMessage());
         }
