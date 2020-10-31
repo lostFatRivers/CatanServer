@@ -6,6 +6,7 @@ import com.jokerbee.consts.MessageType;
 import com.jokerbee.handler.AbstractModule;
 import com.jokerbee.player.Player;
 import com.jokerbee.player.PlayerManager;
+import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import org.apache.commons.lang.StringUtils;
 
@@ -32,6 +33,7 @@ public class GameModule extends AbstractModule {
     @MessageHandler(code = MessageType.CS_SYNC_ROOM)
     private void syncRooms(Player player, JsonObject message) throws Exception {
         logger.info("player sync rooms");
+        Vertx vertx = player.getContext().owner();
         vertx.eventBus().publish(Constants.API_SYNC_ROOM, player.getPlayerId());
     }
 
@@ -48,6 +50,7 @@ public class GameModule extends AbstractModule {
             logger.info("player already have room");
             return;
         }
+        Vertx vertx = player.getContext().owner();
         vertx.eventBus().<Integer>request(Constants.API_CREATE_ROOM, player.getPlayerId(), res -> {
             if (res.succeeded()) {
                 int roomId = res.result().body();
@@ -68,6 +71,7 @@ public class GameModule extends AbstractModule {
             logger.info("player delete room error, player.getCreateRoom():{}, roomId:{}", player.getCreateRoom(), roomId);
             return;
         }
+        Vertx vertx = player.getContext().owner();
         vertx.eventBus().send(Constants.API_DELETE_ROOM_PRE + roomId, player.getPlayerId());
     }
 
@@ -79,6 +83,7 @@ public class GameModule extends AbstractModule {
             logger.info("player delete room error, player.getRoomId():{}, roomId:{}", player.getRoomId(), roomId);
             return;
         }
+        Vertx vertx = player.getContext().owner();
         vertx.eventBus().send(Constants.API_EXIT_ROOM_PRE + roomId, player.getPlayerId());
     }
 
@@ -90,6 +95,7 @@ public class GameModule extends AbstractModule {
             logger.info("player join room error, player.getRoomId():{}, roomId:{}", player.getRoomId(), roomId);
             return;
         }
+        Vertx vertx = player.getContext().owner();
         vertx.eventBus().send(Constants.API_JOIN_ROOM_PRE + roomId, player.getPlayerId());
     }
 
@@ -101,6 +107,7 @@ public class GameModule extends AbstractModule {
             logger.info("player start game error, player.getRoomId():{}, roomId:{}", player.getRoomId(), roomId);
             return;
         }
+        Vertx vertx = player.getContext().owner();
         vertx.eventBus().send(Constants.API_START_GAME_PRE + roomId, player.getPlayerId());
     }
 
@@ -112,6 +119,7 @@ public class GameModule extends AbstractModule {
             logger.info("player select color error, not in room");
             return;
         }
+        Vertx vertx = player.getContext().owner();
         JsonObject msg = new JsonObject().put("colorStr", colorStr).put("playerId", player.getPlayerId());
         vertx.eventBus().send(Constants.API_SELECT_COLOR_PRE + player.getRoomId(), msg);
     }
@@ -125,6 +133,7 @@ public class GameModule extends AbstractModule {
             logger.error("player build road error, not in room");
             return;
         }
+        Vertx vertx = player.getContext().owner();
         JsonObject msg = new JsonObject().put("roadKey", roadKey).put("playerId", player.getPlayerId()).put("roleIndex", roleIndex);
         vertx.eventBus().send(Constants.API_BUILD_ROAD_PRE + player.getRoomId(), msg);
     }
@@ -139,6 +148,7 @@ public class GameModule extends AbstractModule {
             logger.error("player build city error, not in room");
             return;
         }
+        Vertx vertx = player.getContext().owner();
         JsonObject msg = new JsonObject().put("cityKey", cityKey).put("playerId", player.getPlayerId()).put("roleIndex", roleIndex)
                 .put("cityType", cityType);
         vertx.eventBus().send(Constants.API_BUILD_CITY_PRE + player.getRoomId(), msg);
@@ -153,6 +163,7 @@ public class GameModule extends AbstractModule {
             logger.error("player throw dice error.");
             return;
         }
+        Vertx vertx = player.getContext().owner();
         JsonObject msg = new JsonObject().put("playerId", player.getPlayerId()).put("dice1", dice1)
                 .put("dice2", dice2);
         vertx.eventBus().send(Constants.API_THROW_DICE_PRE + player.getRoomId(), msg);
@@ -165,6 +176,7 @@ public class GameModule extends AbstractModule {
             logger.error("player turn next error.");
             return;
         }
+        Vertx vertx = player.getContext().owner();
         vertx.eventBus().send(Constants.API_TURN_NEXT_PRE + player.getRoomId(), player.getPlayerId());
     }
 
@@ -181,6 +193,7 @@ public class GameModule extends AbstractModule {
             logger.error("player sync role error.");
             return;
         }
+        Vertx vertx = player.getContext().owner();
         JsonObject msg = new JsonObject().put("playerId", player.getPlayerId()).put("sourceCardNum", sourceCardNum)
                 .put("skillCardNum", skillCardNum).put("robTimes", robTimes).put("roadLength", roadLength)
                 .put("totalScore", totalScore);
@@ -197,6 +210,7 @@ public class GameModule extends AbstractModule {
             logger.error("player start exchange error.");
             return;
         }
+        Vertx vertx = player.getContext().owner();
         message.put("playerId", player.getPlayerId());
         vertx.eventBus().send(Constants.API_START_EXCHANGE_PRE + player.getRoomId(), message);
     }
@@ -208,6 +222,7 @@ public class GameModule extends AbstractModule {
             logger.error("player close exchange error.");
             return;
         }
+        Vertx vertx = player.getContext().owner();
         vertx.eventBus().send(Constants.API_CLOSE_EXCHANGE_PRE + player.getRoomId(), player.getPlayerId());
     }
 
@@ -218,6 +233,7 @@ public class GameModule extends AbstractModule {
             logger.error("player accept exchange error.");
             return;
         }
+        Vertx vertx = player.getContext().owner();
         vertx.eventBus().send(Constants.API_ACCEPT_EXCHANGE_PRE + player.getRoomId(), player.getPlayerId());
     }
 
@@ -228,6 +244,7 @@ public class GameModule extends AbstractModule {
             logger.error("player resume exchange error.");
             return;
         }
+        Vertx vertx = player.getContext().owner();
         vertx.eventBus().send(Constants.API_RESUME_EXCHANGE_PRE + player.getRoomId(), player.getPlayerId());
     }
 
@@ -238,6 +255,7 @@ public class GameModule extends AbstractModule {
             logger.error("player resume exchange error.");
             return;
         }
+        Vertx vertx = player.getContext().owner();
         JsonObject msg = new JsonObject().put("playerId", player.getPlayerId()).put("targetId", message.getString("targetId"));
         vertx.eventBus().send(Constants.API_CONFIRM_EXCHANGE_PRE + player.getRoomId(), msg);
     }
@@ -249,6 +267,7 @@ public class GameModule extends AbstractModule {
             logger.error("player send chat error.");
             return;
         }
+        Vertx vertx = player.getContext().owner();
         JsonObject msg = new JsonObject().put("nickName", message.getString("nickName")).put("chatMsg", message.getString("chatMsg"));
         vertx.eventBus().send(Constants.API_SEND_CHAT_PRE + player.getRoomId(), msg);
     }
@@ -260,6 +279,7 @@ public class GameModule extends AbstractModule {
             logger.error("player system rob out error.");
             return;
         }
+        Vertx vertx = player.getContext().owner();
         JsonObject msg = new JsonObject()
                 .put("playerId", player.getPlayerId())
                 .put("brickNum", message.getInteger("brickNum", 0))
@@ -277,6 +297,7 @@ public class GameModule extends AbstractModule {
             logger.error("player put rob on map error.");
             return;
         }
+        Vertx vertx = player.getContext().owner();
         JsonObject msg = new JsonObject()
                 .put("playerId", player.getPlayerId())
                 .put("mapIndex", message.getInteger("mapIndex"));
@@ -290,6 +311,7 @@ public class GameModule extends AbstractModule {
             logger.error("player select rob target error.");
             return;
         }
+        Vertx vertx = player.getContext().owner();
         JsonObject msg = new JsonObject()
                 .put("playerId", player.getPlayerId())
                 .put("targetIndex", message.getInteger("targetIndex"));
@@ -303,6 +325,7 @@ public class GameModule extends AbstractModule {
             logger.error("player robbed back target.");
             return;
         }
+        Vertx vertx = player.getContext().owner();
         JsonObject msg = new JsonObject()
                 .put("playerId", player.getPlayerId())
                 .put("sourceType", message.getString("sourceType"));
@@ -316,6 +339,7 @@ public class GameModule extends AbstractModule {
             logger.error("player use skill error.");
             return;
         }
+        Vertx vertx = player.getContext().owner();
         JsonObject msg = new JsonObject()
                 .put("playerId", player.getPlayerId())
                 .put("cardType", message.getInteger("cardType"))
@@ -330,6 +354,7 @@ public class GameModule extends AbstractModule {
             logger.error("player get skill error.");
             return;
         }
+        Vertx vertx = player.getContext().owner();
         JsonObject msg = new JsonObject()
                 .put("playerId", player.getPlayerId());
         vertx.eventBus().send(Constants.API_GET_SKILL_CARD_PRE + player.getRoomId(), msg);

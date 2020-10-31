@@ -40,7 +40,7 @@ public class GetWayVerticle extends AbstractVerticle {
         String textHandlerId = webSocket.textHandlerID();
         logger.info("websocket connect open: {}", textHandlerId);
 
-        Player newPlayer = new Player(webSocket);
+        Player newPlayer = new Player(webSocket, vertx.getOrCreateContext());
         webSocket.closeHandler(v -> {
             logger.info("websocket connect closed: {}", textHandlerId);
             int createRoomId = newPlayer.getCreateRoom();

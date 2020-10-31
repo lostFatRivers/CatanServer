@@ -27,6 +27,10 @@ public class RedisClient {
 	/** 释放锁成功的返回值 */
 	public static final Long UNLOCK_SUCCESS = 1L;
 
+	public static final String COMPARE_AND_DEL_SCRIPT = "if redis.call('hget', KEYS[1], ARGV[1]) == ARGV[2] then  redis.call('hdel', KEYS[1], ARGV[1])  return 1  else  return 0  end";
+
+	public static final String COMPARE_AND_SWAP_SCRIPT = "if redis.call('hget', KEYS[1], ARGV[1]) == ARGV[2] then  redis.call('hset', KEYS[1], ARGV[1], ARGV[3])  return 1  else  return 0  end";
+
 	private Pool<Jedis> jedisPool;
 
 	/** 是否是集群模式 */
@@ -551,4 +555,31 @@ public class RedisClient {
 		}
 	}
 
+	/**
+	 * redis原子操作，如果值相等, 则删除;
+	 */
+    public boolean compareAndDelete(String key, String hKey, String hValue) {
+		try (Jedis jedis = jedisPool.getResource()) {
+			Object result = jedis.eval(COMPARE_AND_DEL_SCRIPT, Collections.singletonList(key),
+					Arrays.asList(hKey, hValue));
+			return UNLOCK_SUCCESS.equals(result);
+		} catch (Exception e) {
+			LOG.error("redis compare and delete failed, key:{}", key, e);
+			return false;
+		}
+    }
+
+	/**
+	 * redis原子操作，如果值相等, 则设置;
+	 */
+    public boolean compareAndSwap(String key, String hKey, String oldValue, String newValue) {
+		try (Jedis jedis = jedisPool.getResource()) {
+			Object result = jedis.eval(COMPARE_AND_SWAP_SCRIPT, Collections.singletonList(key),
+					Arrays.asList(hKey, oldValue, newValue));
+			return UNLOCK_SUCCESS.equals(result);
+		} catch (Exception e) {
+			LOG.error("redis compare and swap failed, key:{}", key, e);
+			return false;
+		}
+	}
 }

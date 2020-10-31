@@ -1,8 +1,6 @@
 package com.jokerbee.handler;
 
 import com.jokerbee.anno.MessageHandler;
-import com.jokerbee.player.Player;
-import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
@@ -16,23 +14,23 @@ import java.util.stream.Stream;
 
 public enum HandlerManager {
     INSTANCE;
-    private static Logger logger = LoggerFactory.getLogger("Handler");
+    private static final Logger logger = LoggerFactory.getLogger("Handler");
 
-    private Vertx vertx;
-    private Map<Integer, Method> handlerMap = new HashMap<>();
-    private Map<Integer, Object> hostMap = new HashMap<>();
+    private String scanPath;
+    private final Map<Integer, Method> handlerMap = new HashMap<>();
+    private final Map<Integer, Object> hostMap = new HashMap<>();
 
     public static HandlerManager getInstance() {
         return INSTANCE;
     }
 
-    public void init(Vertx vertx) throws Exception {
-        this.vertx = vertx;
+    public void init(String scanPath) throws Exception {
+        this.scanPath = scanPath;
         scanHandlers();
     }
 
     private void scanHandlers() throws Exception {
-        Reflections reflections = new Reflections("com.jokerbee.handler.impl");
+        Reflections reflections = new Reflections(scanPath);
         Set<Class<? extends AbstractModule>> handlerClassSet = reflections.getSubTypesOf(AbstractModule.class);
         for (Class<? extends AbstractModule> eachClass : handlerClassSet) {
             logger.info("new instance handler:{}", eachClass.getName());
@@ -40,11 +38,11 @@ public enum HandlerManager {
         }
     }
 
-    private void newInstance(Class<? extends AbstractModule> clazz) throws Exception {
+    private void newInstance(Class<?> clazz) throws Exception {
         if (clazz == null) {
             return;
         }
-        AbstractModule instance = clazz.getDeclaredConstructor().newInstance();
+        Object instance = clazz.getDeclaredConstructor().newInstance();
 
         Method[] methods = clazz.getDeclaredMethods();
         Stream.of(methods).filter(each -> {
@@ -58,18 +56,20 @@ public enum HandlerManager {
         });
     }
 
-    public void onProtocol(Player player, JsonObject message) {
+    public void onProtocol(IMessageConsumer consumer, JsonObject message) {
         int type = message.getInteger("type");
         Method method = handlerMap.get(type);
         if (method == null) {
             logger.error("protocol message not have handler method:{}", type);
             return;
         }
-        try {
-            method.invoke(hostMap.get(type), player, message);
-        } catch (Exception e) {
-            logger.error("protocol message handle error:{}", type, e);
-        }
+        consumer.getContext().runOnContext(v -> {
+            try {
+                method.invoke(hostMap.get(type), consumer, message);
+            } catch (Exception e) {
+                logger.error("protocol message handle error:{}", type, e);
+            }
+        });
     }
 
 }

@@ -2,6 +2,7 @@ package com.jokerbee.player;
 
 import com.jokerbee.consts.MessageType;
 import com.jokerbee.handler.HandlerManager;
+import io.vertx.core.Context;
 import io.vertx.core.http.ServerWebSocket;
 import io.vertx.core.json.JsonObject;
 import org.apache.commons.lang.StringUtils;
@@ -12,8 +13,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Player {
-    private static Logger logger = LoggerFactory.getLogger("Player");
+    private static final Logger logger = LoggerFactory.getLogger("Player");
 
+    private final Context context;
     private final ServerWebSocket connector;
     private String playerId;
     private String playerName = "玩家007";
@@ -34,8 +36,9 @@ public class Player {
 
     private int sourceNumber = 0;
 
-    public Player(ServerWebSocket webSocket) {
-        connector = webSocket;
+    public Player(ServerWebSocket webSocket, Context context) {
+        this.connector = webSocket;
+        this.context = context;
         webSocket.textMessageHandler(this::messageHandler);
     }
 
@@ -145,6 +148,10 @@ public class Player {
 
     public void setSourceNumber(int sourceNumber) {
         this.sourceNumber = sourceNumber;
+    }
+
+    public Context getContext() {
+        return context;
     }
 
     public void destroy() {

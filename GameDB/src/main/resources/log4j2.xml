@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN" monitorInterval="30">
+    <properties>
+        <property name="commonLayout">%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n</property>
+    </properties>
+
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT" immediateFlush="false">
+            <PatternLayout pattern="${commonLayout}"/>
+        </Console>
+        <File name="File" fileName="log/test.log" append="false">
+            <PatternLayout pattern="${commonLayout}"/>
+        </File>
+    </Appenders>
+
+    <Loggers>
+        <Root level="INFO">
+            <AppenderRef ref="Console"/>
+        </Root>
+        <!-- additivity 为 false 会阻止日志在父日志里输出 -->
+        <AsyncLogger name="AsyncLog" level="INFO" additivity="true">
+            <AppenderRef ref="File"/>
+        </AsyncLogger>
+    </Loggers>
+</Configuration>
