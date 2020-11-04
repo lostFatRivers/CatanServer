@@ -49,10 +49,11 @@ public class Player implements IMessageConsumer {
     private void onMessage(Message<Buffer> message) {
         String msg = message.body().toString();
         try {
+            logger.info("handle message {}",  msg);
             JsonObject obj = new JsonObject(msg);
             HandlerManager.getInstance().onProtocol(this, obj);
         } catch (Exception e) {
-            logger.info("handle message failed. {}, msg:{}", e.getMessage(), msg);
+            logger.error("handle message failed. {}, msg:{}", e.getMessage(), msg);
         }
     }
 

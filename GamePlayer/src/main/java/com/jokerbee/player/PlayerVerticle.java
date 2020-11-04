@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -86,8 +87,22 @@ public class PlayerVerticle extends AbstractVerticle {
         msg.reply(serverId);
     }
 
+    private void destroyAll() {
+        RedisClient redis = CacheManager.getInstance().redis();
+
+        for (Map.Entry<String, Player> next : playerMap.entrySet()) {
+            String account = next.getKey();
+            redis.hdel(GameConstant.REDIS_ACCOUNT_SERVER, account);
+
+            Player player = next.getValue();
+            player.destroy();
+        }
+    }
+
     @Override
     public void stop() {
+        destroyAll();
         logger.info("close player service");
     }
+
 }

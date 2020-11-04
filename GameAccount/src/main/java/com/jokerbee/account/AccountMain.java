@@ -1,5 +1,6 @@
 package com.jokerbee.account;
 
+import com.jokerbee.cache.CacheManager;
 import io.vertx.config.ConfigRetriever;
 import io.vertx.config.ConfigRetrieverOptions;
 import io.vertx.config.ConfigStoreOptions;
@@ -74,7 +75,14 @@ public class AccountMain {
         Vertx vertx = bootContext.owner();
 
         logger.info("start deploy verticle");
-        return Future.future(pros -> {
+        return Future.<Void>future(pros -> {
+            try {
+                CacheManager.getInstance().init(config.getJsonObject("cache"));
+                pros.complete();
+            } catch (Exception e) {
+                pros.fail(e);
+            }
+        }).compose(v -> Future.future(pros -> {
             // 玩家启动
             JsonObject accountConfig = config.getJsonObject("account");
             DeploymentOptions options = new DeploymentOptions()
@@ -83,7 +91,7 @@ public class AccountMain {
                     .setInstances(accountConfig.getInteger("instance"))
                     .setConfig(accountConfig);
             vertx.deployVerticle(AccountVerticle.class.getName(), options, pros);
-        });
+        }));
     }
 
     private static void addShutdownOptional(Vertx vertx) {
@@ -93,6 +101,7 @@ public class AccountMain {
                     int read = System.in.read();
                     logger.info("read console input:{}", read);
                     if (read == 10) {
+                        CacheManager.getInstance().shutdown();
                         logger.info("******************************************");
                         logger.info("***                                    ***");
                         logger.info("*****            Good bye            *****");

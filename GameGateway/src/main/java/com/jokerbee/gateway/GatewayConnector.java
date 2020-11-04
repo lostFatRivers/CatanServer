@@ -9,6 +9,7 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.ServerWebSocket;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -96,6 +97,9 @@ public class GatewayConnector {
         if (!webSocket.isClosed()) {
             webSocket.close();
         }
-        vertx.eventBus().publish(GameConstant.API_CONNECT_BROKE, getHandlerId());
+        if (StringUtils.isEmpty(bindAccount)) {
+            return;
+        }
+        vertx.eventBus().publish(GameConstant.API_ACCOUNT_UNBIND, bindAccount);
     }
 }

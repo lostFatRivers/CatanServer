@@ -521,8 +521,12 @@ public class RedisClient {
 	 *            本次加锁请求的唯一id;
 	 */
 	public boolean lock(String key, String requireId) {
+		return lock(key, requireId, 3 * TimeUtil.SECOND_MILLIS);
+	}
+
+	public boolean lock(String key, String requireId, long timeout) {
 		try (Jedis jedis = jedisPool.getResource()) {
-			String result = jedis.set(key, requireId, SetParams.setParams().nx().px(3 * TimeUtil.SECOND_MILLIS));
+			String result = jedis.set(key, requireId, SetParams.setParams().nx().px(timeout));
 			return LOCK_SUCCESS.equals(result);
 		} catch (Exception e) {
 			LOG.error("redis lock get failed, key:{}, requireId:{}", key, requireId, e);

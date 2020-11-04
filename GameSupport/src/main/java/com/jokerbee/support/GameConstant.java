@@ -13,7 +13,6 @@ public interface GameConstant {
     String API_ACCOUNT_UNBIND = "account_unbind";
     String API_CREATE_PLAYER = "create_player";
     String API_SOCKET_CLOSE = "connectClose";
-    String API_CONNECT_BROKE = "connectBroke";
 
     String API_SERVER_TITLE = "request_server_";
 
@@ -24,4 +23,5 @@ public interface GameConstant {
 
     String REDIS_SERVER_ID = "server_auto_id";
 
+    String REDIS_ACCOUNT_SERVER = "account_server_id";
 }
