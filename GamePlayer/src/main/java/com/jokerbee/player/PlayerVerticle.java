@@ -1,16 +1,21 @@
 package com.jokerbee.player;
 
+import com.jokerbee.cache.CacheManager;
+import com.jokerbee.cache.RedisClient;
 import com.jokerbee.support.GameConstant;
+import com.jokerbee.support.MessageCode;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 玩家管理器;
@@ -20,39 +25,65 @@ import java.util.Map;
  * @version: 1.0
  */
 public class PlayerVerticle extends AbstractVerticle {
-    private static final Logger logger = LoggerFactory.getLogger("Player");
+    private static final Logger logger = LoggerFactory.getLogger("PlayerVerticle");
 
     private final Map<String, Player> playerMap = new HashMap<>();
-    private final Map<String, MessageConsumer<?>> destroyConsumers = new HashMap<>();
+
+    private String serverId;
 
     @Override
     public void start(Promise<Void> startPromise) {
-        logger.info("start player service");
+        RedisClient redis = CacheManager.getInstance().redis();
+        serverId = redis.incr(GameConstant.REDIS_SERVER_ID) + "";
         vertx.eventBus().consumer(GameConstant.API_CREATE_PLAYER, this::createPlayer);
+        vertx.eventBus().consumer(GameConstant.API_SERVER_TITLE + serverId, this::onServerMessage);
+        logger.info("start player service:{}", serverId);
         startPromise.complete();
     }
 
-    private void createPlayer(Message<JsonObject> msg) {
-        JsonObject json = msg.body();
-        String socketTextHandlerId = json.getString("handlerId");
-        String account = json.getString("account");
-        Player player = new Player(socketTextHandlerId, vertx.getOrCreateContext());
-        player.setAccount(account);
-        playerMap.put(socketTextHandlerId, player);
+    private void onServerMessage(Message<JsonObject> msg) {
+        JsonObject body = msg.body();
+        Integer type = body.getInteger("type");
+        if (type == null) {
+            msg.fail(1, "invalidMessage");
+            return;
+        }
+        int messageCode = type;
+        switch (messageCode) {
+            case MessageCode.AP_ACCOUNT_DISCONNECT -> playerDisconnect(body, msg);
+            case MessageCode.AP_ACCOUNT_DESTROY -> playerDestroy(body, msg);
+            default -> logger.warn("cannot handle message:{}", messageCode);
+        }
+    }
 
-        MessageConsumer<String> consumer = vertx.eventBus().consumer(GameConstant.API_DESTROY_PLAYER + socketTextHandlerId, dMsg -> {
-            String dAccount = dMsg.body();
-            if (!account.equals(dAccount)) {
-                logger.info("destroy player not match account:{}, {}", account, dAccount);
-            }
-            playerMap.remove(socketTextHandlerId);
-            MessageConsumer<?> dc = destroyConsumers.remove(socketTextHandlerId);
-            dc.unregister();
-            vertx.eventBus().send(socketTextHandlerId + GameConstant.API_TAIL_SOCKET_CLOSE, "");
-            dMsg.reply(GameConstant.RESULT_SUCCESS);
-        });
-        destroyConsumers.put(socketTextHandlerId, consumer);
-        msg.reply(GameConstant.RESULT_SUCCESS);
+    private void playerDisconnect(JsonObject body, Message<JsonObject> msg) {
+        String account = body.getString("account");
+        Player player = playerMap.get(account);
+        logger.info("player disconnect. account:{}.", account);
+        if (player == null) {
+            msg.fail(1, "account player not found.");
+        } else {
+            player.disconnect();
+            msg.reply("");
+        }
+    }
+
+    private void playerDestroy(JsonObject body, Message<JsonObject> msg) {
+        String account = body.getString("account");
+        Player player = playerMap.get(account);
+        if (player != null) {
+            player.destroy();
+        }
+        playerMap.remove(account);
+        msg.reply("");
+    }
+
+    private void createPlayer(Message<String> msg) {
+        String account = msg.body();
+        Player player = new Player(account, vertx.getOrCreateContext());
+        player.registerConsumer();
+        playerMap.put(account, player);
+        msg.reply(serverId);
     }
 
     @Override

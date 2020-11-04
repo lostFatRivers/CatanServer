@@ -1,10 +1,12 @@
 package com.jokerbee.gateway;
 
 import com.jokerbee.support.GameConstant;
-import com.jokerbee.util.TimeUtil;
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.eventbus.Message;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.http.HttpConnection;
 import io.vertx.core.http.HttpServer;
@@ -12,11 +14,6 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.ServerWebSocket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * 网关;
@@ -30,14 +27,12 @@ public class GatewayVerticle extends AbstractVerticle {
 
     private HttpServer httpServer;
 
-    private final Map<ServerWebSocket, Long> connectTime = new HashMap<>();
-
     @Override
     public void start(Promise<Void> startPromise) {
         createWebSocketService()
                 .onSuccess(hs -> {
                     this.httpServer = hs;
-                    vertx.setPeriodic(5000, this::tickConnect);
+                    registerConsumer();
                     addShutdownHook();
                     startPromise.complete();
                 })
@@ -68,34 +63,27 @@ public class GatewayVerticle extends AbstractVerticle {
             return;
         }
         logger.info("websocket connect: {}, remote:{}", webSocket.path(), webSocket.remoteAddress());
-        connectTime.put(webSocket, TimeUtil.getTime());
-
-        final String textHandlerId = webSocket.textHandlerID();
-        vertx.eventBus().send(GameConstant.API_CONNECT_ACTIVE, textHandlerId);
-
-        MessageConsumer<Object> consumer = vertx.eventBus().consumer(textHandlerId + GameConstant.API_TAIL_SOCKET_CLOSE, msg -> {
-            webSocket.close();
-            connectTime.remove(webSocket);
-        });
-        webSocket.handler(buf -> vertx.eventBus().send(textHandlerId + GameConstant.API_TAIL_MESSAGE_DISPATCH, buf));
-        webSocket.closeHandler(v -> {
-            logger.info("websocket closed:{}", textHandlerId);
-            consumer.unregister();
-        });
-        webSocket.exceptionHandler(e -> logger.error("websocket cache exception:{}.", textHandlerId, e));
+        GatewayConnector connector = new GatewayConnector(vertx, webSocket);
+        ConnectorManager.getInstance().addConnector(connector);
     }
 
-    private void tickConnect(Long tid) {
-        List<ServerWebSocket> timeoutList = new ArrayList<>();
-        connectTime.forEach((key, value) -> {
-            if (TimeUtil.getTime() - value > 60000) {
-                timeoutList.add(key);
-            }
-        });
-        timeoutList.forEach(each -> {
-            each.close();
-            connectTime.remove(each);
-        });
+    private void registerConsumer() {
+        vertx.eventBus().consumer(GameConstant.API_SOCKET_CLOSE, this::disconnectWebSocket);
+    }
+
+    private void disconnectWebSocket(Message<String> msg) {
+        String handlerId = msg.body();
+        GatewayConnector connector = ConnectorManager.getInstance().getConnector(handlerId);
+        if (connector == null) return;
+        connector.close();
+    }
+
+    private void dispatchMessage(AsyncResult<Message<Buffer>> res) {
+        if (res.succeeded()) {
+            logger.info("message dispatch success.");
+        } else {
+            logger.error("message dispatch failed.", res.cause());
+        }
     }
 
     private void httpConnection(HttpConnection connection) {

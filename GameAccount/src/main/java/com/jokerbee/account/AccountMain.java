@@ -34,11 +34,11 @@ public class AccountMain {
                 .compose(AccountMain::loadConfig)
                 .compose(AccountMain::deployVerticle)
                 .onSuccess(v -> {
-                    logger.info("boot Gateway Service success");
+                    logger.info("boot Account Service success");
                     addShutdownOptional(bootContext.owner());
                 })
                 .onFailure(tr -> {
-                    logger.info("boot gateway service failed.", tr);
+                    logger.info("boot Account service failed.", tr);
                     bootContext.owner().close();
                 });
     }
@@ -47,7 +47,8 @@ public class AccountMain {
      * 创建集群模式 Vertx;
      */
     private static Future<Vertx> createClusterVertx() {
-        VertxOptions options = new VertxOptions().setClusterManager(new HazelcastClusterManager());
+        VertxOptions options = new VertxOptions().setClusterManager(new HazelcastClusterManager())
+                .setBlockedThreadCheckInterval(10000000);
         return Future.future(pro -> Vertx.clusteredVertx(options, pro));
     }
 

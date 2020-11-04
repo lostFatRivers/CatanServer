@@ -2,21 +2,16 @@ package com.jokerbee.account;
 
 import com.jokerbee.support.GameConstant;
 import com.jokerbee.support.MessageCode;
-import com.jokerbee.util.TimeUtil;
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.AsyncResult;
 import io.vertx.core.Promise;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.Message;
-import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 玩家管理器;
@@ -26,92 +21,102 @@ import java.util.Map;
  * @version: 1.0
  */
 public class AccountVerticle extends AbstractVerticle {
-    private static final Logger logger = LoggerFactory.getLogger("Player");
+    private static final Logger logger = LoggerFactory.getLogger("Account");
 
-    private final Map<String, Long> connectTime = new HashMap<>();
-    private final Map<String, MessageConsumer<?>> socketConsumers = new HashMap<>();
-    private final Map<String, String> accountToSocket = new HashMap<>();
+    private final Map<String, String> accountServerIds = new HashMap<>();
+
+    private final Set<String> lockedAccount = new HashSet<>();
 
     @Override
     public void start(Promise<Void> startPromise) {
         logger.info("start account service");
-        vertx.eventBus().consumer(GameConstant.API_CONNECT_ACTIVE, this::connectActive);
-        vertx.setPeriodic(5000, this::tickConnect);
+        vertx.eventBus().consumer(GameConstant.API_ACCOUNT_BIND, this::accountBind);
+        vertx.eventBus().consumer(GameConstant.API_ACCOUNT_UNBIND, this::accountUnbind);
         startPromise.complete();
     }
 
-    private void tickConnect(Long tid) {
-        List<String> timeoutList = new ArrayList<>();
-        connectTime.forEach((key, value) -> {
-            if (TimeUtil.getTime() - value > 60000) {
-                timeoutList.add(key);
+    /**
+     * 绑定账号和Player;
+     */
+    private void accountBind(Message<JsonObject> msg) {
+        JsonObject body = msg.body();
+        String account = body.getString("account");
+        String password = body.getString("password");
+        if (invalidAccount(account, password)) {
+            msg.fail(1, "invalidAccount");
+        }
+        logger.info("account bind start:{}", account);
+        if (lockedAccount.contains(account)) {
+            msg.fail(1, "already in bind");
+            return;
+        }
+        lockedAccount.add(account);
+        String serverId = accountServerIds.get(account);
+        if (serverId == null) {
+            logger.info("create account player:{}", account);
+            vertx.eventBus().<String>request(GameConstant.API_CREATE_PLAYER, account, res -> onCreatePlayer(account, res, msg));
+        } else {
+            tellAccountDisconnect(account, serverId, msg);
+        }
+        vertx.setTimer(5000, tid -> {
+            if (lockedAccount.contains(account)) {
+                logger.warn("account lock timeout:{}", account);
+                lockedAccount.remove(account);
             }
-        });
-        timeoutList.forEach(eachId -> {
-            vertx.eventBus().send(eachId + GameConstant.API_TAIL_SOCKET_CLOSE, "");
-            logger.info("invalid connect: {}, close it.", eachId);
-            connectTime.remove(eachId);
-            MessageConsumer<?> consumer = socketConsumers.get(eachId);
-            if (consumer != null) consumer.unregister();
         });
     }
 
-    private void connectActive(Message<String> msg) {
-        String socketTextHandlerId = msg.body();
-        logger.info("new connect received: {}", socketTextHandlerId);
-        connectTime.put(socketTextHandlerId, TimeUtil.getTime());
-        MessageConsumer<Buffer> consumer = vertx.eventBus().consumer(socketTextHandlerId + GameConstant.API_TAIL_MESSAGE_DISPATCH, cMsg -> onMessage(socketTextHandlerId, cMsg));
-        socketConsumers.put(socketTextHandlerId, consumer);
-    }
-
-    private void onMessage(String handlerId, Message<Buffer> msg) {
-        Buffer body = msg.body();
-        try {
-            JsonObject message = body.toJsonObject();
-            int messageType = message.getInteger("type");
-            if (messageType == MessageCode.CS_ACCOUNT_LOGIN) {
-                String account = message.getString("account");
-                String password = message.getString("password");
-                if (invalidAccount(account, password)) {
-                    return;
+    /**
+     * 解绑账号和Player, 会销毁Player对象;
+     */
+    private void accountUnbind(Message<String> msg) {
+        String account = msg.body();
+        String serverId = accountServerIds.get(account);
+        if (serverId == null) {
+            msg.reply("");
+        } else {
+            JsonObject serverMsg = new JsonObject().put("type", MessageCode.AP_ACCOUNT_DESTROY).put("account", account);
+            vertx.eventBus().<String>request(GameConstant.API_SERVER_TITLE + serverId, serverMsg, res -> {
+                if (res.succeeded()) {
+                    msg.reply("");
+                    accountServerIds.remove(account);
+                } else {
+                    logger.error("account unbind failed.", res.cause());
+                    msg.fail(1, res.cause().getMessage());
                 }
-                String oldId = accountToSocket.get(account);
-                if (oldId.equals(handlerId)) {
-                    msg.reply(GameConstant.RESULT_SUCCESS);
-                    connectTime.remove(handlerId);
-                    MessageConsumer<?> consumer = socketConsumers.get(handlerId);
-                    if (consumer != null) consumer.unregister();
-                    return;
-                }
-                vertx.eventBus().request(GameConstant.API_DESTROY_PLAYER + oldId, account, res -> {
-                    if (res.succeeded()) {
-                        msg.reply(GameConstant.RESULT_SUCCESS);
-                        connectTime.remove(handlerId);
-                        MessageConsumer<?> consumer = socketConsumers.get(handlerId);
-                        if (consumer != null) consumer.unregister();
-                        JsonObject json = new JsonObject().put("account", account).put("handlerId", handlerId);
-                        vertx.eventBus().request(GameConstant.API_CREATE_PLAYER, json, res2 -> {
-                            if (res2.succeeded()) {
-                                logger.info("create player success");
-                            } else {
-                                logger.info("create player error", res2.cause());
-                                vertx.eventBus().send(handlerId + GameConstant.API_TAIL_SOCKET_CLOSE, "");
-                            }
-                        });
-                    } else {
-                        logger.error("destroy player error", res.cause());
-                        vertx.eventBus().send(handlerId + GameConstant.API_TAIL_SOCKET_CLOSE, "");
-                    }
-                });
-            }
-            msg.fail(1, "not login message.");
-        } catch (Exception e) {
-            logger.error("connect {} message error.", handlerId);
-            msg.fail(1, e.getMessage());
+            });
         }
     }
 
-    public boolean invalidAccount(String account, String password) {
+    private void onCreatePlayer(String account, AsyncResult<Message<String>> res, Message<JsonObject> msg) {
+        if (res.succeeded()) {
+            String serverId = res.result().body();
+            accountServerIds.put(account, serverId);
+            msg.reply(serverId);
+            logger.info("create account player success:{}, server:{}", account, serverId);
+        } else {
+            msg.fail(1, res.cause().getMessage());
+            logger.info("create account player failed:{}.", account, res.cause());
+        }
+        lockedAccount.remove(account);
+    }
+
+    private void tellAccountDisconnect(String account, String serverId, Message<JsonObject> msg) {
+        logger.info("account player disconnect:{}", account);
+        JsonObject serverMsg = new JsonObject().put("type", MessageCode.AP_ACCOUNT_DISCONNECT).put("account", account);
+        vertx.eventBus().<String>request(GameConstant.API_SERVER_TITLE + serverId, serverMsg, res -> {
+            if (res.succeeded()) {
+                msg.reply(serverId);
+                logger.info("account player disconnect success:{}", account);
+            } else {
+                logger.error("account player disconnect failed:{}", account, res.cause());
+                msg.fail(1, res.cause().getMessage());
+            }
+            lockedAccount.remove(account);
+        });
+    }
+
+    private boolean invalidAccount(String account, String password) {
         return StringUtils.isEmpty(account) || StringUtils.isEmpty(password);
     }
 

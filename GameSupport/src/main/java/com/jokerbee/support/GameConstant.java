@@ -9,14 +9,19 @@ package com.jokerbee.support;
  */
 public interface GameConstant {
 
-    String API_CONNECT_ACTIVE = "connectActive";
-    String API_CREATE_PLAYER = "createPlayer";
-    String API_DESTROY_PLAYER = "destroyPlayer_";
+    String API_ACCOUNT_BIND = "account_bind";
+    String API_ACCOUNT_UNBIND = "account_unbind";
+    String API_CREATE_PLAYER = "create_player";
+    String API_SOCKET_CLOSE = "connectClose";
+    String API_CONNECT_BROKE = "connectBroke";
 
-    String API_TAIL_SOCKET_CLOSE = "_close";
+    String API_SERVER_TITLE = "request_server_";
+
     String API_TAIL_MESSAGE_DISPATCH = "_message_consume";
+    String API_TAIL_SOCKET_SWAP = "_socket_swap";
 
     String RESULT_SUCCESS = "success";
 
-    String REDIS_ACCOUNT_TO_SOCKET = "account_to_socket_id";
+    String REDIS_SERVER_ID = "server_auto_id";
+
 }

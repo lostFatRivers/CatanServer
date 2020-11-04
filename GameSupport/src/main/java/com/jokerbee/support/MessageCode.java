@@ -9,7 +9,22 @@ package com.jokerbee.support;
  */
 public interface MessageCode {
 
+    int SC_ERROR = 101;
+
     int CS_ACCOUNT_LOGIN = 1001;
 
     int CS_SYNC_DATA = 1002;
+
+
+
+
+
+
+
+    // ***************** 服务器之间消息 ******************
+    // A: Account, G: Gateway, P: Player
+
+    int AP_ACCOUNT_DISCONNECT = 90001;
+
+    int AP_ACCOUNT_DESTROY = 90002;
 }

@@ -1,14 +1,17 @@
 package com.joker.tools.hutool;
 
 import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.util.ClassUtil;
 import cn.hutool.dfa.WordTree;
 import cn.hutool.poi.excel.ExcelReader;
 import cn.hutool.poi.excel.ExcelUtil;
+import com.joker.tools.algorithm.AbstractAlgorithm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Hutool 库测试字符串屏蔽;
@@ -21,7 +24,7 @@ public class HutoolStringMatch {
     private static final Logger logger = LoggerFactory.getLogger("Match");
 
     public static void main(String[] args) {
-        filterWordsConfigMatch();
+        scanPackageTest();
     }
 
     private static void matchWordTest() {
@@ -102,6 +105,13 @@ public class HutoolStringMatch {
             long startTime = System.nanoTime();
             List<String> matchList = wordTree.matchAll("放大搞吸行毒少服都是发都是爱思服的服都是答复的撒");
             logger.info("match list:{}, cost time:{}", matchList, System.nanoTime() - startTime);
+        }
+    }
+
+    private static void scanPackageTest() {
+        Set<Class<?>> classes = ClassUtil.scanPackageBySuper("com.joker.tools.algorithm", AbstractAlgorithm.class);
+        for (Class<?> eachClass : classes) {
+            logger.info("class name:{}", eachClass.getName());
         }
     }
 }

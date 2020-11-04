@@ -18,7 +18,7 @@ public enum HandlerManager {
 
     private String scanPath;
     private final Map<Integer, Method> handlerMap = new HashMap<>();
-    private final Map<Integer, Object> hostMap = new HashMap<>();
+    private final Map<Integer, AbstractModule> hostMap = new HashMap<>();
 
     public static HandlerManager getInstance() {
         return INSTANCE;
@@ -38,11 +38,11 @@ public enum HandlerManager {
         }
     }
 
-    private void newInstance(Class<?> clazz) throws Exception {
+    private void newInstance(Class<? extends AbstractModule> clazz) throws Exception {
         if (clazz == null) {
             return;
         }
-        Object instance = clazz.getDeclaredConstructor().newInstance();
+        AbstractModule instance = clazz.getDeclaredConstructor().newInstance();
 
         Method[] methods = clazz.getDeclaredMethods();
         Stream.of(methods).filter(each -> {

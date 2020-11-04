@@ -36,11 +36,11 @@ public class PlayerMain {
                 .compose(PlayerMain::loadConfig)
                 .compose(PlayerMain::deployVerticle)
                 .onSuccess(v -> {
-                    logger.info("boot Gateway Service success");
+                    logger.info("boot Player Service success");
                     addShutdownOptional(bootContext.owner());
                 })
                 .onFailure(tr -> {
-                    logger.info("boot gateway service failed.", tr);
+                    logger.info("boot Player service failed.", tr);
                     bootContext.owner().close();
                 });
     }
