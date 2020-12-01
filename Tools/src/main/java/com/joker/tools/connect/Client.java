@@ -1,6 +1,10 @@
 package com.joker.tools.connect;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpClient;
+import io.vertx.core.http.HttpClientRequest;
+import io.vertx.core.http.HttpMethod;
+import io.vertx.core.net.NetClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,7 +30,8 @@ public class Client {
 
     private static void startConnect(Vertx vertx, int num) {
         for (int i = 0; i < num; i++) {
-            vertx.createHttpClient()
+            HttpClient httpClient = vertx.createHttpClient();
+            httpClient
                     .webSocket(9008, "192.168.203.128", "/", res -> {
                         if (res.succeeded()) {
                             logger.info("connect server ok.");
@@ -34,6 +39,10 @@ public class Client {
                             logger.error("connect failed.", res.cause());
                         }
                     });
+            HttpClientRequest request = httpClient.request(HttpMethod.GET, 8080, "10.0.0.159", "/item");
+
+            NetClient netClient = vertx.createNetClient();
+
         }
     }
 }

@@ -7,7 +7,6 @@ import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.ServerWebSocket;
-import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -93,6 +92,7 @@ public class GatewayConnector {
     }
 
     public void close() {
+        logger.info("websocket connect close: {}", webSocket.remoteAddress());
         ConnectorManager.getInstance().removeConnector(this);
         if (!webSocket.isClosed()) {
             webSocket.close();

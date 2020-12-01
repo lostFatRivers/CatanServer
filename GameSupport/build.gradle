@@ -6,4 +6,7 @@ dependencies {
     compile "io.vertx:vertx-hazelcast:${vertxVersion}"
     compile "io.vertx:vertx-config:${vertxVersion}"
     compile "io.vertx:vertx-config-hocon:${vertxVersion}"
+
+    compile "javax.activation:javax.activation-api:1.2.0"
+    compile "javax.persistence:javax.persistence-api:2.2"
 }

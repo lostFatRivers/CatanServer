@@ -30,7 +30,7 @@ public enum DBManager {
 
     private Vertx vertx;
     private DataSource dataSource;
-    private AtomicInteger counter = new AtomicInteger(0);
+    private final AtomicInteger counter = new AtomicInteger(0);
 
     public static DBManager getInstance() {
         return INSTANCE;

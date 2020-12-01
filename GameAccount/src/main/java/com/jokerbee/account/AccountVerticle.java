@@ -2,11 +2,14 @@ package com.jokerbee.account;
 
 import com.jokerbee.cache.CacheManager;
 import com.jokerbee.cache.RedisClient;
+import com.jokerbee.db.entity.IEntity;
+import com.jokerbee.db.entity.impl.AccountEntity;
 import com.jokerbee.support.GameConstant;
 import com.jokerbee.support.MessageCode;
 import com.jokerbee.util.RandomUtil;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.eventbus.MessageConsumer;
@@ -46,22 +49,24 @@ public class AccountVerticle extends AbstractVerticle {
         JsonObject body = msg.body();
         String account = body.getString("account");
         String password = body.getString("password");
-        if (invalidAccount(account, password)) {
-            msg.fail(1, "invalidAccount");
-        }
-        logger.info("account bind start:{}", account);
-        String requireId = RandomUtil.getRandom(100000, 999999) + "";
-        if (!lock(account, requireId)) {
-            msg.fail(1, "already in bind");
-            return;
-        }
-        String serverId = getServerId(account);
-        if (serverId == null) {
-            logger.info("create account player:{}", account);
-            vertx.eventBus().<String>request(GameConstant.API_CREATE_PLAYER, account, res -> onCreatePlayer(account, res, msg, requireId));
-        } else {
-            tellAccountDisconnect(account, serverId, msg, requireId);
-        }
+
+        invalidAccount(account, password)
+                .onFailure(err -> msg.fail(1, err.getMessage()))
+                .onSuccess(pid -> {
+                    logger.info("account bind start, account:{}, playerId:{}", account, pid);
+                    String requireId = RandomUtil.getRandom(100000, 999999) + "";
+                    if (!lock(account, requireId)) {
+                        msg.fail(1, "already in bind");
+                        return;
+                    }
+                    String serverId = getServerId(account);
+                    if (serverId == null) {
+                        logger.info("create account player:{}", account);
+                        vertx.eventBus().<String>request(GameConstant.API_CREATE_PLAYER, account, res -> onCreatePlayer(account, res, msg, requireId));
+                    } else {
+                        tellAccountDisconnect(account, serverId, msg, requireId);
+                    }
+                });
     }
 
     /**
@@ -121,8 +126,26 @@ public class AccountVerticle extends AbstractVerticle {
         });
     }
 
-    private boolean invalidAccount(String account, String password) {
-        return StringUtils.isEmpty(account) || StringUtils.isEmpty(password);
+    private Future<Long> invalidAccount(String account, String password) {
+        return Future.future(prom -> {
+            if (StringUtils.isEmpty(account) || StringUtils.isEmpty(password)) {
+                prom.fail("invalid account");
+                return;
+            }
+            JsonObject jsonObject = new JsonObject().put("entity", "AccountEntity").put("account", account);
+            queryEntity(AccountEntity.class, jsonObject).compose(ae -> Future.<Long>future(prom2 -> prom2.complete(ae.getId()))).onComplete(prom);
+        });
+    }
+
+    private <T extends IEntity> Future<T> queryEntity(Class<T> eClass, JsonObject queryParams) {
+        return Future.future(prom -> vertx.eventBus().<JsonObject>request(GameConstant.DB_QUERY, queryParams, qRes -> {
+            if (qRes.succeeded()) {
+                JsonObject entityJson = qRes.result().body();
+                prom.complete(entityJson.mapTo(eClass));
+            } else {
+                prom.fail(qRes.cause());
+            }
+        }));
     }
 
     private String getServerId(String account) {
