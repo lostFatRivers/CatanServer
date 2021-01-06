@@ -24,7 +24,7 @@ public class LogoutLogParser {
     public static void main(String[] args) {
         logger.info("log read start.");
 
-        FileReader reader = new FileReader("C:/Users/Administrator/Desktop/log/allLog/aaaa.txt");
+        FileReader reader = new FileReader("C:/Users/Administrator/Desktop/log/allLog/3/logout1.txt");
         List<String> lines = reader.readLines();
         lines.forEach(el -> {
             if (el.contains("start logout")) {
@@ -37,7 +37,7 @@ public class LogoutLogParser {
                 String timeStr = str1s[1];
                 long playerId = Long.parseLong(pidStr.split(":")[1]);
                 long endTime = Long.parseLong(timeStr.split(":")[1]);
-                if (!allCmd.containsKey(playerId)) {
+                if (!allCmd.containsKey(playerId) || !el.contains("LgOfflineProcess")) {
                     return;
                 }
                 Logout logout = allCmd.get(playerId);

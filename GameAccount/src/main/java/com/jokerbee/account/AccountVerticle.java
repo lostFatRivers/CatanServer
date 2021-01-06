@@ -132,12 +132,13 @@ public class AccountVerticle extends AbstractVerticle {
                 prom.fail("invalid account");
                 return;
             }
-            JsonObject jsonObject = new JsonObject().put("entity", "AccountEntity").put("account", account);
+            JsonObject jsonObject = new JsonObject().put("account", account);
             queryEntity(AccountEntity.class, jsonObject).compose(ae -> Future.<Long>future(prom2 -> prom2.complete(ae.getId()))).onComplete(prom);
         });
     }
 
     private <T extends IEntity> Future<T> queryEntity(Class<T> eClass, JsonObject queryParams) {
+        queryParams.put("entity", eClass.getSimpleName());
         return Future.future(prom -> vertx.eventBus().<JsonObject>request(GameConstant.DB_QUERY, queryParams, qRes -> {
             if (qRes.succeeded()) {
                 JsonObject entityJson = qRes.result().body();

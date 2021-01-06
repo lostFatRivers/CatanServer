@@ -1,5 +1,6 @@
 package com.joker.tools.connect;
 
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientRequest;
@@ -39,7 +40,7 @@ public class Client {
                             logger.error("connect failed.", res.cause());
                         }
                     });
-            HttpClientRequest request = httpClient.request(HttpMethod.GET, 8080, "10.0.0.159", "/item");
+            Future<HttpClientRequest> request = httpClient.request(HttpMethod.GET, 8080, "10.0.0.159", "/item");
 
             NetClient netClient = vertx.createNetClient();
 

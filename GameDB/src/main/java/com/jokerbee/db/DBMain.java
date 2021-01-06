@@ -23,7 +23,6 @@ public class DBMain {
     }
 
     private static final Logger logger = LoggerFactory.getLogger("DB");
-    private static long timerId = -1;
 
     public static void main(String[] args) {
         ClusterManager manager = new HazelcastClusterManager();
@@ -33,8 +32,8 @@ public class DBMain {
             if (res.succeeded()) {
                 Vertx vertx = res.result();
                 try {
-                    DBManager.getInstance().init(vertx);
-                    testQueryRequest(vertx);
+                    DBManager.getInstance().init();
+                    DBManager.getInstance().createAccountTest();
                 } catch (Exception e) {
                     logger.error("db init failed.", e);
                 }
@@ -45,18 +44,6 @@ public class DBMain {
         });
 
 
-    }
-
-    private static void testQueryRequest(Vertx vertx) {
-        timerId = vertx.setPeriodic(5000, tid -> {
-            vertx.eventBus().request("queryEntity", "hello", res -> {
-                if (res.failed()) {
-                    logger.error("query entity failed.", res.cause());
-                } else {
-                    logger.error("query entity success, index:{}", res.result().body().toString());
-                }
-            });
-        });
     }
 
     private static void addShutdownOptional(Vertx vertx) {
@@ -70,7 +57,6 @@ public class DBMain {
                     logger.info("*****            Good bye            *****");
                     logger.info("***                                    ***");
                     logger.info("******************************************");
-                    vertx.cancelTimer(timerId);
                     vertx.close();
                 }
             } catch (IOException e) {

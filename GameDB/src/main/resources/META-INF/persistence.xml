@@ -1,0 +1,29 @@
+<persistence version="2.0"
+             xmlns="http://java.sun.com/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://java.sun.com/xml/ns/persistence
+                http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd ">
+    <persistence-unit name="myUnit"  transaction-type="RESOURCE_LOCAL">
+        <!-- 如果不注明哪些是Entity, 会报错 Unknown Entity -->
+        <class>com.jokerbee.db.entity.impl.AccountEntity</class>
+
+        <properties>
+            <property name="hibernate.dialect" value="org.hibernate.dialect.MySQL8Dialect" />
+            <property name="hibernate.hbm2ddl.auto" value="update" />
+
+            <property name="hibernate.format_sql" value="true" />
+            <property name="hibernate.use_sql_comments" value="true" />
+            <property name="hibernate.show_sql" value="true" />
+
+            <property name="hibernate.connection.provider_class" value="org.hibernate.hikaricp.internal.HikariCPConnectionProvider"/>
+
+            <property name="hibernate.hikari.minimumIdle" value="20"/>
+            <property name="hibernate.hikari.maximumPoolSize" value="100"/>
+            <property name="hibernate.hikari.idleTimeout" value="30000"/>
+            <property name="hibernate.hikari.dataSourceClassName" value="com.mysql.cj.jdbc.MysqlDataSource"/>
+            <property name="hibernate.hikari.dataSource.url" value="jdbc:mysql://127.0.0.1:3306/catan?serverTimezone=UTC&amp;useUnicode=true&amp;characterEncoding=utf-8&amp;useSSL=false"/>
+            <property name="hibernate.hikari.username" value="root"/>
+            <property name="hibernate.hikari.password" value="495669631"/>
+        </properties>
+    </persistence-unit>
+</persistence>

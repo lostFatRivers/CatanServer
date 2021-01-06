@@ -38,7 +38,7 @@ subprojects {
     }
 
     jar {
-        exclude('/log4j2.xml', '/log', '/conf', '/config', '/icon', '/script')
+        exclude('/log4j2.xml', '/log', '/conf', '/config', '/icon', '/script', '/cluster.xml', 'server.conf')
     }
 
     task dependentTask(type: Copy) {

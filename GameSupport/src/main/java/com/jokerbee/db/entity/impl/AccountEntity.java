@@ -2,8 +2,8 @@ package com.jokerbee.db.entity.impl;
 
 import com.jokerbee.db.entity.IEntity;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import javax.persistence.*;
+import java.util.StringJoiner;
 
 /**
  * 账号实体
@@ -12,14 +12,19 @@ import javax.persistence.Id;
  * @date: Created in 2020/11/12 16:21
  * @version: 1.0
  */
-@Entity(name = "account")
+@Entity
+@Table(name = "account")
 public class AccountEntity implements IEntity {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
 
+    @Column(name = "account")
     private String account;
 
+    @Column(name = "password")
     private String password;
 
     @Override
@@ -45,5 +50,14 @@ public class AccountEntity implements IEntity {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    @Override
+    public String toString() {
+        return new StringJoiner(", ", AccountEntity.class.getSimpleName() + "[", "]")
+                .add("id=" + id)
+                .add("account='" + account + "'")
+                .add("password='" + password + "'")
+                .toString();
     }
 }

@@ -586,4 +586,45 @@ public class RedisClient {
 			return false;
 		}
 	}
+
+	/**
+	 * 获取并删除列表
+	 *
+	 * @param key
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public List<String> getAndDelHashAll(String key) {
+		List<String> list = new ArrayList<>();
+		try (Jedis jedis = jedisPool.getResource()) {
+			String script = "local list = redis.call('HVALS', KEYS[1])  redis.call('del', KEYS[1])  return list";
+			Object result = jedis.eval(script, Collections.singletonList(key), Collections.emptyList());
+			if (result != null) {
+				List<String> retList = (List<String>) result;
+				list.addAll(retList);
+			}
+		} catch (Exception e) {
+			LOG.error("redis compare and swap failed, key:{}", key, e);
+		}
+		return list;
+	}
+
+	/**
+	 * 增加到指定列表
+	 */
+	public void addHash(String key, Object field, Object object) {
+		try (Jedis jedis = jedisPool.getResource()) {
+			jedis.hset(key, field.toString(), object.toString());
+		} catch (Exception e) {
+			LOG.error("redis compare and swap failed, key:{}", key, e);
+		}
+	}
+
+	public void delHash(String key, Object field) {
+		try (Jedis jedis = jedisPool.getResource()) {
+			jedis.hdel(key, field.toString());
+		} catch (Exception e) {
+			LOG.error("redis compare and swap failed, key:{}", key, e);
+		}
+	}
 }

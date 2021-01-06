@@ -24,7 +24,8 @@ public class HutoolStringMatch {
     private static final Logger logger = LoggerFactory.getLogger("Match");
 
     public static void main(String[] args) {
-        scanPackageTest();
+//        filterWordsConfigMatch();
+        matchWordTest();
     }
 
     private static void matchWordTest() {
@@ -60,13 +61,13 @@ public class HutoolStringMatch {
         deepWordTree.addWord("伊藤润二");
         deepWordTree.addWord("特朗普");
 
-//        list.forEach(str -> logger.info("deepWordTree 测试结果 [{}] 是否屏蔽:{}", str, deepWordTree.matchAll(str, 1, false, false).size() > 0));
+        list.forEach(str -> logger.info("deepWordTree 测试结果 [{}] 是否屏蔽:{}", str, deepWordTree.matchAll(str, 1, false, false).size() > 0));
 
-        long startTime = System.currentTimeMillis();
-        for (String eachStr : list) {
-            deepWordTree.matchAll(eachStr, 1, true, true);
-        }
-        logger.info("all cost time:{}", System.currentTimeMillis() - startTime);
+//        long startTime = System.currentTimeMillis();
+//        for (String eachStr : list) {
+//            deepWordTree.matchAll(eachStr, 1, true, true);
+//        }
+//        logger.info("all cost time:{}", System.currentTimeMillis() - startTime);
     }
 
     private static List<String> loadFilterWords() {
