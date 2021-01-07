@@ -2,14 +2,12 @@ package com.jokerbee.db.manager;
 
 import com.jokerbee.db.entity.IEntity;
 import com.jokerbee.db.entity.impl.AccountEntity;
-import io.vertx.core.json.JsonArray;
+import com.jokerbee.util.TimeUtil;
 import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -35,78 +33,45 @@ public enum DBManager {
     }
 
     /**
-     * 新增
+     * 保存
      */
-    public void createAccountTest() {
-        EntityManager manager = factory.createEntityManager();
-        EntityTransaction tx = manager.getTransaction();
-        tx.begin();
-        AccountEntity accountEntity = new AccountEntity();
-        accountEntity.setAccount("joker");
-        accountEntity.setPassword("4555");
-        manager.persist(accountEntity);
-        tx.commit();
-        logger.info("create account entity finished.");
+    public void insert(IEntity entity) {
+        voidBaseDBTask(manager -> manager.persist(entity));
     }
 
     /**
      * 更新
      */
-    public void updateAccount() {
-        EntityManager manager = factory.createEntityManager();
-        EntityTransaction tx = manager.getTransaction();
-        tx.begin();
-        AccountEntity entity = manager.find(AccountEntity.class, 7L);
-        entity.setPassword("123456");
-        tx.commit();
-        logger.info("update account entity finished.");
+    public void update(IEntity entity) {
+        voidBaseDBTask(manager -> manager.merge(entity));
     }
 
     /**
-     * 查询
+     * 条件查询
      */
-    public void queryAccount() {
-        EntityManager manager = factory.createEntityManager();
-        EntityTransaction tx = manager.getTransaction();
-        tx.begin();
-        TypedQuery<AccountEntity> query = manager.createQuery("from AccountEntity where id=7", AccountEntity.class);
-        List<AccountEntity> resultList = query.getResultList();
-        tx.commit();
-        logger.info("query account: {}.", resultList);
+    public <T extends IEntity> List<T> query(Class<T> clazz, JsonObject queryInfo) {
+        return baseDBTask(manager -> {
+            String sql = buildSql(clazz, queryInfo);
+            TypedQuery<T> query = manager.createQuery(sql, clazz);
+            return query.getResultList();
+        });
     }
 
     /**
-     * 查询
+     * sql语句查询
      */
-    @SuppressWarnings("unchecked")
-    public <T extends IEntity> List<T> query(JsonObject queryInfo) {
-        EntityManager manager = factory.createEntityManager();
-        EntityTransaction tx = manager.getTransaction();
-        List<T> list = new ArrayList<>();
-        tx.begin();
-        try {
-            String entityName = queryInfo.getString("entity");
-            Class<T> aClass = (Class<T>) Class.forName(entityName);
-            String sql = buildSql(aClass, queryInfo);
-            TypedQuery<T> query = manager.createQuery(sql, aClass);
-            list = query.getResultList();
-            tx.commit();
-        } catch (Exception e) {
-            logger.error("query entity error,", e);
-            tx.rollback();
-        }
-        return list;
+    public <T extends IEntity> List<T> query(Class<T> clazz, String sql) {
+        return baseDBTask(manager -> {
+            TypedQuery<T> query = manager.createQuery(sql, clazz);
+            return query.getResultList();
+        });
     }
 
     private String buildSql(Class<?> clazz, JsonObject queryInfo) {
         String sql = "from " + clazz.getSimpleName();
         StringBuilder sqlParam = new StringBuilder();
         for (Map.Entry<String, Object> next : queryInfo) {
-            String key = next.getKey();
-            if (key.equals("entity")) {
-                continue;
-            }
-            String param = " " + key + "='" + next.getValue() + "'";
+            String param = " " + next.getKey() + "='" + next.getValue() + "'";
             if (sqlParam.isEmpty()) {
                 sqlParam.append(" where");
             } else {
@@ -115,24 +80,50 @@ public enum DBManager {
             sqlParam.append(param);
         }
         sql = sql + sqlParam.toString();
-        logger.info("origin sql:{}", sql);
+        logger.debug("origin sql:{}", sql);
         return sql;
+    }
+
+
+    private <T> T baseDBTask(IDBTask<T> task) {
+        EntityManager manager = factory.createEntityManager();
+        EntityTransaction tx = manager.getTransaction();
+        tx.begin();
+        try {
+            T result = task.execute(manager);
+            tx.commit();
+            return result;
+        } catch (Exception e) {
+            logger.error("DB task execute error.", e);
+            tx.rollback();
+            return null;
+        } finally {
+            manager.close();
+        }
+    }
+
+    private void voidBaseDBTask(IDBVoidTask task) {
+        baseDBTask(manager -> {
+            task.execute(manager);
+            return null;
+        });
     }
 
     public static void main(String[] args) {
         DBManager.getInstance().init();
 
-//        DBManager.getInstance().createAccountTest();
-//        DBManager.getInstance().updateAccount();
-        //DBManager.getInstance().queryAccount();
-        JsonObject json = new JsonObject();
-        json.put("entity", AccountEntity.class.getName());
-//        json.put("account", "joker");
-//        json.put("password", "123456");
-        List<AccountEntity> list = DBManager.getInstance().query(json);
+//        AccountEntity account = new AccountEntity();
+//        account.setAccount("zoll");
+//        account.setPassword("123321");
+//        DBManager.getInstance().save(account);
 
-        JsonArray jsonArray = new JsonArray();
-        list.forEach(en -> jsonArray.add(JsonObject.mapFrom(en)));
-        logger.info("query account:{}", jsonArray);
+        for (int i = 0; i < 5; i++) {
+            long time = TimeUtil.getNanoTime();
+            JsonObject json = new JsonObject().put("account", "zoll");
+            List<AccountEntity> list = DBManager.getInstance().query(AccountEntity.class, json);
+            logger.info("query cost time:{}", (TimeUtil.getNanoTime() - time) / 1000000.0f);
+        }
+
+
     }
 }

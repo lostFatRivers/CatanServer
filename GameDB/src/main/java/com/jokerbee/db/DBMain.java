@@ -33,7 +33,6 @@ public class DBMain {
                 Vertx vertx = res.result();
                 try {
                     DBManager.getInstance().init();
-                    DBManager.getInstance().createAccountTest();
                 } catch (Exception e) {
                     logger.error("db init failed.", e);
                 }

@@ -32,12 +32,15 @@ public class PlayerVerticle extends AbstractVerticle {
 
     private String serverId;
 
+    private MessageConsumer<String> createPlayerConsumer;
+    private MessageConsumer<JsonObject> serverMessageConsumer;
+
     @Override
     public void start(Promise<Void> startPromise) {
         RedisClient redis = CacheManager.getInstance().redis();
         serverId = redis.incr(GameConstant.REDIS_SERVER_ID) + "";
-        vertx.eventBus().consumer(GameConstant.API_CREATE_PLAYER, this::createPlayer);
-        vertx.eventBus().consumer(GameConstant.API_SERVER_TITLE + serverId, this::onServerMessage);
+        createPlayerConsumer = vertx.eventBus().consumer(GameConstant.API_CREATE_PLAYER, this::createPlayer);
+        serverMessageConsumer = vertx.eventBus().consumer(GameConstant.API_SERVER_TITLE + serverId, this::onServerMessage);
         logger.info("start player service:{}", serverId);
         startPromise.complete();
     }
@@ -101,6 +104,8 @@ public class PlayerVerticle extends AbstractVerticle {
 
     @Override
     public void stop() {
+        createPlayerConsumer.unregister();
+        serverMessageConsumer.unregister();
         destroyAll();
         logger.info("close player service");
     }

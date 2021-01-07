@@ -42,6 +42,7 @@ public class PlayerMain {
                 .onFailure(tr -> {
                     logger.info("boot Player service failed.", tr);
                     bootContext.owner().close();
+                    CacheManager.getInstance().shutdown();
                 });
     }
 
@@ -84,9 +85,10 @@ public class PlayerMain {
                 pros.fail(e);
             }
         }).compose(v -> Future.<String>future(pros -> {
-            // 玩家启动
+            // 玩家启动, 玩家都放入 worker 线程, 让耗时业务不阻塞 eventbus
             JsonObject playerConfig = config.getJsonObject("player");
             DeploymentOptions options = new DeploymentOptions()
+                    .setWorker(true)
                     .setWorkerPoolName("Player")
                     .setWorkerPoolSize(playerConfig.getInteger("workPoolSize"))
                     .setInstances(playerConfig.getInteger("instance"))

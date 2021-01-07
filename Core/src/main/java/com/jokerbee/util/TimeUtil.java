@@ -7,4 +7,8 @@ public class TimeUtil {
     public static long getTime() {
         return System.currentTimeMillis();
     }
+
+    public static long getNanoTime() {
+        return System.nanoTime();
+    }
 }

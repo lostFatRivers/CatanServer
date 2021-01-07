@@ -91,6 +91,7 @@ public class RedisClient {
 		if (jedisPool != null) {
 			jedisPool.destroy();
 		}
+		LOG.info("redis client shutdown.");
 	}
 
 	public boolean ping() {
@@ -609,22 +610,4 @@ public class RedisClient {
 		return list;
 	}
 
-	/**
-	 * 增加到指定列表
-	 */
-	public void addHash(String key, Object field, Object object) {
-		try (Jedis jedis = jedisPool.getResource()) {
-			jedis.hset(key, field.toString(), object.toString());
-		} catch (Exception e) {
-			LOG.error("redis compare and swap failed, key:{}", key, e);
-		}
-	}
-
-	public void delHash(String key, Object field) {
-		try (Jedis jedis = jedisPool.getResource()) {
-			jedis.hdel(key, field.toString());
-		} catch (Exception e) {
-			LOG.error("redis compare and swap failed, key:{}", key, e);
-		}
-	}
 }
