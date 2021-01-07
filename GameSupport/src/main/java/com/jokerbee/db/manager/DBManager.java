@@ -1,8 +1,6 @@
 package com.jokerbee.db.manager;
 
 import com.jokerbee.db.entity.IEntity;
-import com.jokerbee.db.entity.impl.AccountEntity;
-import com.jokerbee.util.TimeUtil;
 import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +28,7 @@ public enum DBManager {
 
     public void init() {
         factory = Persistence.createEntityManagerFactory("myUnit");
+        logger.info("init DB manager success.");
     }
 
     /**
@@ -109,21 +108,4 @@ public enum DBManager {
         });
     }
 
-    public static void main(String[] args) {
-        DBManager.getInstance().init();
-
-//        AccountEntity account = new AccountEntity();
-//        account.setAccount("zoll");
-//        account.setPassword("123321");
-//        DBManager.getInstance().save(account);
-
-        for (int i = 0; i < 5; i++) {
-            long time = TimeUtil.getNanoTime();
-            JsonObject json = new JsonObject().put("account", "zoll");
-            List<AccountEntity> list = DBManager.getInstance().query(AccountEntity.class, json);
-            logger.info("query cost time:{}", (TimeUtil.getNanoTime() - time) / 1000000.0f);
-        }
-
-
-    }
 }

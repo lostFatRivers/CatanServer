@@ -1,6 +1,7 @@
 package com.jokerbee.account;
 
 import com.jokerbee.cache.CacheManager;
+import com.jokerbee.db.manager.DBManager;
 import io.vertx.config.ConfigRetriever;
 import io.vertx.config.ConfigRetrieverOptions;
 import io.vertx.config.ConfigStoreOptions;
@@ -77,6 +78,7 @@ public class AccountMain {
         logger.info("start deploy verticle");
         return Future.<Void>future(pros -> {
             try {
+                DBManager.getInstance().init();
                 CacheManager.getInstance().init(config.getJsonObject("cache"));
                 pros.complete();
             } catch (Exception e) {
@@ -101,13 +103,12 @@ public class AccountMain {
                     int read = System.in.read();
                     logger.info("read console input:{}", read);
                     if (read == 10) {
-                        CacheManager.getInstance().shutdown();
                         logger.info("******************************************");
                         logger.info("***                                    ***");
                         logger.info("*****            Good bye            *****");
                         logger.info("***                                    ***");
                         logger.info("******************************************");
-                        vertx.close();
+                        vertx.close(res -> CacheManager.getInstance().shutdown());
                         return;
                     }
                 }

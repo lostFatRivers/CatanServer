@@ -4,6 +4,7 @@ import com.jokerbee.cache.CacheManager;
 import com.jokerbee.cache.RedisClient;
 import com.jokerbee.db.entity.IEntity;
 import com.jokerbee.db.entity.impl.AccountEntity;
+import com.jokerbee.db.manager.DBManager;
 import com.jokerbee.support.GameConstant;
 import com.jokerbee.support.MessageCode;
 import com.jokerbee.util.RandomUtil;
@@ -132,21 +133,31 @@ public class AccountVerticle extends AbstractVerticle {
                 prom.fail("invalid account");
                 return;
             }
-            JsonObject jsonObject = new JsonObject().put("account", account);
-            queryEntity(AccountEntity.class, jsonObject).compose(ae -> Future.<Long>future(prom2 -> prom2.complete(ae.getId()))).onComplete(prom);
+            queryAccountEntity(account, password)
+                    .compose(ae -> {
+                        if (!ae.getPassword().equals(password)) {
+                            return Future.failedFuture("password error");
+                        }
+                        return Future.<Long>future(prom2 -> prom2.complete(ae.getId()));
+                    })
+                    .onComplete(prom);
         });
     }
 
-    private <T extends IEntity> Future<T> queryEntity(Class<T> eClass, JsonObject queryParams) {
-        queryParams.put("entity", eClass.getSimpleName());
-        return Future.future(prom -> vertx.eventBus().<JsonObject>request(GameConstant.DB_QUERY, queryParams, qRes -> {
-            if (qRes.succeeded()) {
-                JsonObject entityJson = qRes.result().body();
-                prom.complete(entityJson.mapTo(eClass));
+    private Future<AccountEntity> queryAccountEntity(String account, String password) {
+        return Future.future(prom1 -> vertx.executeBlocking(prom2 -> {
+            List<AccountEntity> list = DBManager.getInstance().query(AccountEntity.class, "from AccountEntity where account='" + account + "'");
+            AccountEntity accountEntity;
+            if (list == null || list.size() <= 0) {
+                accountEntity = new AccountEntity();
+                accountEntity.setAccount(account);
+                accountEntity.setPassword(password);
+                DBManager.getInstance().insert(accountEntity);
             } else {
-                prom.fail(qRes.cause());
+                accountEntity = list.get(0);
             }
-        }));
+            prom2.complete(accountEntity);
+        }, prom1));
     }
 
     private String getServerId(String account) {

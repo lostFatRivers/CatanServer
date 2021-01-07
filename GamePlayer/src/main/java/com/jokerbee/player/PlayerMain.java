@@ -84,7 +84,7 @@ public class PlayerMain {
             } catch (Exception e) {
                 pros.fail(e);
             }
-        }).compose(v -> Future.<String>future(pros -> {
+        }).compose(v -> Future.future(pros -> {
             // 玩家启动, 玩家都放入 worker 线程, 让耗时业务不阻塞 eventbus
             JsonObject playerConfig = config.getJsonObject("player");
             DeploymentOptions options = new DeploymentOptions()

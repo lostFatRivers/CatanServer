@@ -12,6 +12,7 @@ public interface MessageCode {
     int SC_ERROR = 101;
 
     int CS_ACCOUNT_LOGIN = 1001;
+    int SC_ACCOUNT_LOGIN = 2001;
 
     int CS_SYNC_DATA = 1002;
 

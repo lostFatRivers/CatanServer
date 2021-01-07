@@ -24,6 +24,4 @@ public interface GameConstant {
     String REDIS_SERVER_ID = "server_auto_id";
 
     String REDIS_ACCOUNT_SERVER = "account_server_id";
-
-    String DB_QUERY = "query_entity";
 }

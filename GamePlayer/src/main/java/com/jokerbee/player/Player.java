@@ -3,6 +3,7 @@ package com.jokerbee.player;
 import com.jokerbee.handler.HandlerManager;
 import com.jokerbee.handler.IMessageConsumer;
 import com.jokerbee.support.GameConstant;
+import com.jokerbee.support.MessageCode;
 import io.vertx.core.Context;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.Message;
@@ -64,6 +65,11 @@ public class Player implements IMessageConsumer {
             logger.warn("old textHandlerId:{} not disconnect", this.textHandlerId);
         }
         this.textHandlerId = handlerId;
+
+        JsonObject result = new JsonObject();
+        result.put("type", MessageCode.SC_ACCOUNT_LOGIN)
+                .put("success", true);
+        this.sendMessage(result);
     }
 
     @Override
@@ -79,6 +85,10 @@ public class Player implements IMessageConsumer {
         return textHandlerId;
     }
 
+    public void sendMessage(JsonObject message) {
+        this.context.owner().eventBus().send(this.textHandlerId, message);
+    }
+
     public void disconnect() {
         if (StringUtils.isEmpty(textHandlerId)) {
             return;
@@ -90,5 +100,6 @@ public class Player implements IMessageConsumer {
     public void destroy() {
         disconnect();
         consumers.forEach(MessageConsumer::unregister);
+        logger.info("destroy player:{}, textHandlerId:{}", account, textHandlerId);
     }
 }

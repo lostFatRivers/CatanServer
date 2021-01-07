@@ -33,11 +33,11 @@ public class GatewayMain {
                 .compose(GatewayMain::loadConfig)
                 .compose(GatewayMain::deployVerticle)
                 .onSuccess(v -> {
-                    logger.info("boot Account Service success");
+                    logger.info("boot gateway Service success");
                     addShutdownOptional(bootContext.owner());
                 })
                 .onFailure(tr -> {
-                    logger.info("boot Account service failed.", tr);
+                    logger.info("boot gateway service failed.", tr);
                     bootContext.owner().close();
                 });
     }
