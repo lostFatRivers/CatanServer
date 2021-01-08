@@ -5,6 +5,7 @@ import com.jokerbee.handler.IMessageConsumer;
 import com.jokerbee.support.GameConstant;
 import com.jokerbee.support.MessageCode;
 import io.vertx.core.Context;
+import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.eventbus.MessageConsumer;
@@ -26,17 +27,20 @@ import java.util.List;
 public class Player implements IMessageConsumer {
     private static final Logger logger = LoggerFactory.getLogger("Player");
 
-    private String textHandlerId;
+    private String handlerId;
 
     private final Context context;
+
+    private final Vertx vertx;
 
     private final String account;
 
     private final List<MessageConsumer<?>> consumers = new ArrayList<>();
 
-    public Player(String account, Context context) {
+    public Player(String account, Context context, Vertx vertx) {
         this.account = account;
         this.context = context;
+        this.vertx = vertx;
         logger.info("create new player:{}", context);
     }
 
@@ -60,16 +64,12 @@ public class Player implements IMessageConsumer {
 
     private void socketSwap(Message<String> message) {
         String handlerId = message.body();
-        logger.info("player textHandlerId swap. account:{}, handlerId:{}", account, handlerId);
-        if (StringUtils.isNotEmpty(this.textHandlerId)) {
-            logger.warn("old textHandlerId:{} not disconnect", this.textHandlerId);
+        logger.info("player handlerId swap. account:{}, handlerId:{}", account, handlerId);
+        if (StringUtils.isNotEmpty(this.handlerId)) {
+            logger.warn("old handlerId:{} not disconnect", this.handlerId);
         }
-        this.textHandlerId = handlerId;
-
-        JsonObject result = new JsonObject();
-        result.put("type", MessageCode.SC_ACCOUNT_LOGIN)
-                .put("success", true);
-        this.sendMessage(result);
+        this.handlerId = handlerId;
+        message.reply(GameConstant.RESULT_SUCCESS);
     }
 
     @Override
@@ -81,25 +81,26 @@ public class Player implements IMessageConsumer {
         return account;
     }
 
-    public String getTextHandlerId() {
-        return textHandlerId;
+    public String getHandlerId() {
+        return handlerId;
     }
 
     public void sendMessage(JsonObject message) {
-        this.context.owner().eventBus().send(this.textHandlerId, message);
+        this.vertx.eventBus().request(this.handlerId + GameConstant.API_TAIL_MESSAGE_CLIENT, message.toString())
+            .onFailure(err -> logger.error("player:{} send message:{} failed.", account, message, err));
     }
 
     public void disconnect() {
-        if (StringUtils.isEmpty(textHandlerId)) {
+        if (StringUtils.isEmpty(handlerId)) {
             return;
         }
-        this.context.owner().eventBus().publish(GameConstant.API_SOCKET_CLOSE, textHandlerId);
-        textHandlerId = null;
+        this.context.owner().eventBus().publish(GameConstant.API_SOCKET_CLOSE, handlerId);
+        handlerId = null;
     }
 
     public void destroy() {
+        logger.info("destroy player:{}, handlerId:{}", account, handlerId);
         disconnect();
         consumers.forEach(MessageConsumer::unregister);
-        logger.info("destroy player:{}, textHandlerId:{}", account, textHandlerId);
     }
 }

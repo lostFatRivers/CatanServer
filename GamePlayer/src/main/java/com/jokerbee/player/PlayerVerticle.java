@@ -84,7 +84,7 @@ public class PlayerVerticle extends AbstractVerticle {
 
     private void createPlayer(Message<String> msg) {
         String account = msg.body();
-        Player player = new Player(account, vertx.getOrCreateContext());
+        Player player = new Player(account, vertx.getOrCreateContext(), vertx);
         player.registerConsumer();
         playerMap.put(account, player);
         msg.reply(serverId);

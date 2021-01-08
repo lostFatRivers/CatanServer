@@ -3,9 +3,11 @@ package com.jokerbee.gateway;
 import com.jokerbee.support.GameConstant;
 import com.jokerbee.support.MessageCode;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.Message;
+import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.http.ServerWebSocket;
 import io.vertx.core.json.JsonObject;
 import org.apache.commons.lang.StringUtils;
@@ -29,6 +31,8 @@ public class GatewayConnector {
     /** 连接绑定的账号 */
     private String bindAccount;
 
+    private MessageConsumer<Buffer> consumer;
+
     public GatewayConnector(Vertx vertx, ServerWebSocket webSocket) {
         this.vertx = vertx;
         this.webSocket = webSocket;
@@ -36,10 +40,11 @@ public class GatewayConnector {
     }
 
     private void registerHandler() {
-        final String textHandlerId = webSocket.textHandlerID();
+        final String handlerId = webSocket.textHandlerID();
         webSocket.handler(this::onMessage);
         webSocket.closeHandler(v -> close());
-        webSocket.exceptionHandler(e -> logger.error("websocket cache exception:{}.", textHandlerId, e));
+        webSocket.exceptionHandler(e -> logger.error("websocket cache exception:{}.", handlerId, e));
+        logger.info("websocket connect: {}, remote:{}, handlerId:{}", webSocket.path(), webSocket.remoteAddress(), handlerId);
     }
 
     private void onMessage(Buffer buf) {
@@ -72,10 +77,22 @@ public class GatewayConnector {
     private void onBindResult(String account, AsyncResult<Message<String>> res) {
         if (res.succeeded()) {
             this.bindAccount = account;
-            vertx.eventBus().send(account + GameConstant.API_TAIL_SOCKET_SWAP, webSocket.textHandlerID());
+            Future<Message<Object>> request = vertx.eventBus().request(account + GameConstant.API_TAIL_SOCKET_SWAP, webSocket.textHandlerID());
+            request.onSuccess(m -> onSocketSwapSuccess()).onFailure(err -> {
+                logger.error("gateway connector message client consumer failed.", err);
+                close();
+            });
         } else {
             logger.error("not bind account, error.", res.cause());
         }
+    }
+
+    private void onSocketSwapSuccess() {
+        String address = webSocket.textHandlerID() + GameConstant.API_TAIL_MESSAGE_CLIENT;
+        consumer = vertx.eventBus().consumer(address, msg -> {
+            webSocket.write(msg.body());
+            msg.reply(GameConstant.RESULT_SUCCESS);
+        });
     }
 
     public String getHandlerId() {
@@ -96,6 +113,9 @@ public class GatewayConnector {
         ConnectorManager.getInstance().removeConnector(this);
         if (!webSocket.isClosed()) {
             webSocket.close();
+        }
+        if (consumer != null) {
+            consumer.unregister();
         }
         if (StringUtils.isEmpty(bindAccount)) {
             return;

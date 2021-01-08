@@ -33,7 +33,6 @@ public class GatewayVerticle extends AbstractVerticle {
                 .onSuccess(hs -> {
                     this.httpServer = hs;
                     registerConsumer();
-                    addShutdownHook();
                     startPromise.complete();
                 })
                 .onFailure(startPromise::fail);
@@ -62,7 +61,6 @@ public class GatewayVerticle extends AbstractVerticle {
             logger.info("websocket connect reject");
             return;
         }
-        logger.info("websocket connect: {}, remote:{}", webSocket.path(), webSocket.remoteAddress());
         GatewayConnector connector = new GatewayConnector(vertx, webSocket);
         ConnectorManager.getInstance().addConnector(connector);
     }
@@ -90,10 +88,9 @@ public class GatewayVerticle extends AbstractVerticle {
         logger.info("get http connection: {}", connection.remoteAddress());
     }
 
-    private void addShutdownHook() {
-        context.addCloseHook(h -> {
-            httpServer.close(h);
-            logger.info("close gateway service");
-        });
+    @Override
+    public void stop(Promise<Void> h) throws Exception {
+        httpServer.close(h);
+        logger.info("close gateway service");
     }
 }

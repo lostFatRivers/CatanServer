@@ -88,7 +88,7 @@ public class PlayerMain {
             // 玩家启动, 玩家都放入 worker 线程, 让耗时业务不阻塞 eventbus
             JsonObject playerConfig = config.getJsonObject("player");
             DeploymentOptions options = new DeploymentOptions()
-                    .setWorker(true)
+                    //.setWorker(true)
                     .setWorkerPoolName("Player")
                     .setWorkerPoolSize(playerConfig.getInteger("workPoolSize"))
                     .setInstances(playerConfig.getInteger("instance"))

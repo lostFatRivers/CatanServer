@@ -18,6 +18,7 @@ public interface GameConstant {
 
     String API_TAIL_MESSAGE_DISPATCH = "_message_consume";
     String API_TAIL_SOCKET_SWAP = "_socket_swap";
+    String API_TAIL_MESSAGE_CLIENT = "_message_client";
 
     String RESULT_SUCCESS = "success";
 
