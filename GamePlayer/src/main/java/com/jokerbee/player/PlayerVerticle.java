@@ -74,8 +74,13 @@ public class PlayerVerticle extends AbstractVerticle {
 
     private void playerDestroy(JsonObject body, Message<JsonObject> msg) {
         String account = body.getString("account");
+        String handlerId = body.getString("handlerId");
         Player player = playerMap.get(account);
         if (player != null) {
+            if (!handlerId.equals(player.getHandlerId())) {
+                msg.fail(1, "not match player handlerId");
+                return;
+            }
             player.destroy();
         }
         playerMap.remove(account);

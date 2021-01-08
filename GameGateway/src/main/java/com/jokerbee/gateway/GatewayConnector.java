@@ -14,6 +14,9 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
  * Gateway 连接对象;
  *
@@ -32,6 +35,8 @@ public class GatewayConnector {
     private String bindAccount;
 
     private MessageConsumer<Buffer> consumer;
+
+    private AtomicBoolean closeTag = new AtomicBoolean(false);
 
     public GatewayConnector(Vertx vertx, ServerWebSocket webSocket) {
         this.vertx = vertx;
@@ -109,7 +114,9 @@ public class GatewayConnector {
     }
 
     public void close() {
-        logger.info("websocket connect close: {}", webSocket.remoteAddress());
+        if (!closeTag.compareAndSet(false, true)) {
+            return;
+        }
         ConnectorManager.getInstance().removeConnector(this);
         if (!webSocket.isClosed()) {
             webSocket.close();
@@ -120,6 +127,8 @@ public class GatewayConnector {
         if (StringUtils.isEmpty(bindAccount)) {
             return;
         }
-        vertx.eventBus().publish(GameConstant.API_ACCOUNT_UNBIND, bindAccount);
+        logger.info("websocket connect close:{}, bindAccount:{}", webSocket.remoteAddress(), bindAccount);
+        JsonObject json = new JsonObject().put("handlerId", webSocket.textHandlerID()).put("account", bindAccount);
+        vertx.eventBus().send(GameConstant.API_ACCOUNT_UNBIND, json);
     }
 }

@@ -2,7 +2,6 @@ package com.jokerbee.account;
 
 import com.jokerbee.cache.CacheManager;
 import com.jokerbee.cache.RedisClient;
-import com.jokerbee.db.entity.IEntity;
 import com.jokerbee.db.entity.impl.AccountEntity;
 import com.jokerbee.db.manager.DBManager;
 import com.jokerbee.support.GameConstant;
@@ -38,7 +37,7 @@ public class AccountVerticle extends AbstractVerticle {
         logger.info("start account service");
         MessageConsumer<JsonObject> c1 = vertx.eventBus().consumer(GameConstant.API_ACCOUNT_BIND, this::accountBind);
         list.add(c1);
-        MessageConsumer<String> c2 = vertx.eventBus().consumer(GameConstant.API_ACCOUNT_UNBIND, this::accountUnbind);
+        MessageConsumer<JsonObject> c2 = vertx.eventBus().consumer(GameConstant.API_ACCOUNT_UNBIND, this::accountUnbind);
         list.add(c2);
         startPromise.complete();
     }
@@ -65,34 +64,37 @@ public class AccountVerticle extends AbstractVerticle {
                         logger.info("create account player:{}", account);
                         vertx.eventBus().<String>request(GameConstant.API_CREATE_PLAYER, account, res -> onCreatePlayer(account, res, msg, requireId));
                     } else {
-                        tellAccountDisconnect(account, serverId, msg, requireId);
+                        tellPlayerDisconnect(account, serverId, msg, requireId);
                     }
                 });
     }
 
     /**
-     * 解绑账号和Player, 会销毁Player对象;
+     * 账号有效性检查;
+     *
+     * @return 账号唯一id;
      */
-    private void accountUnbind(Message<String> msg) {
-        String account = msg.body();
-        String serverId = getServerId(account);
-        if (serverId == null) {
-            msg.reply("");
-        } else {
-            JsonObject serverMsg = new JsonObject().put("type", MessageCode.AP_ACCOUNT_DESTROY).put("account", account);
-            vertx.eventBus().<String>request(GameConstant.API_SERVER_TITLE + serverId, serverMsg, res -> {
-                if (res.succeeded()) {
-                    msg.reply("");
-                    removeServerId(account);
-                    logger.error("account unbind success:{}", account);
-                } else {
-                    logger.error("account unbind failed.", res.cause());
-                    msg.fail(1, res.cause().getMessage());
-                }
-            });
-        }
+    private Future<Long> invalidAccount(String account, String password) {
+        return Future.future(prom -> {
+            if (StringUtils.isEmpty(account) || StringUtils.isEmpty(password)) {
+                prom.fail("invalid account");
+                return;
+            }
+            queryAccountEntity(account, password)
+                    .compose(ae -> {
+                        if (!ae.getPassword().equals(password)) {
+                            return Future.failedFuture("password error");
+                        }
+                        return Future.<Long>future(prom2 -> prom2.complete(ae.getId()));
+                    })
+                    .onComplete(prom);
+        });
     }
 
+    /**
+     * 通知创建玩家对象反馈;
+     *
+     */
     private void onCreatePlayer(String account, AsyncResult<Message<String>> res, Message<JsonObject> msg, String requireId) {
         if (res.succeeded()) {
             String serverId = res.result().body();
@@ -106,7 +108,7 @@ public class AccountVerticle extends AbstractVerticle {
         unlock(account, requireId);
     }
 
-    private void tellAccountDisconnect(String account, String serverId, Message<JsonObject> msg, String requireId) {
+    private void tellPlayerDisconnect(String account, String serverId, Message<JsonObject> msg, String requireId) {
         logger.info("account player disconnect:{}", account);
         JsonObject serverMsg = new JsonObject().put("type", MessageCode.AP_ACCOUNT_DISCONNECT).put("account", account);
         vertx.eventBus().<String>request(GameConstant.API_SERVER_TITLE + serverId, serverMsg, res -> {
@@ -127,21 +129,28 @@ public class AccountVerticle extends AbstractVerticle {
         });
     }
 
-    private Future<Long> invalidAccount(String account, String password) {
-        return Future.future(prom -> {
-            if (StringUtils.isEmpty(account) || StringUtils.isEmpty(password)) {
-                prom.fail("invalid account");
-                return;
-            }
-            queryAccountEntity(account, password)
-                    .compose(ae -> {
-                        if (!ae.getPassword().equals(password)) {
-                            return Future.failedFuture("password error");
-                        }
-                        return Future.<Long>future(prom2 -> prom2.complete(ae.getId()));
-                    })
-                    .onComplete(prom);
-        });
+    /**
+     * 解绑账号和Player, 会销毁Player对象;
+     */
+    private void accountUnbind(Message<JsonObject> msg) {
+        JsonObject json = msg.body();
+        String account = json.getString("account");
+        String handlerId = json.getString("handlerId");
+        String serverId = getServerId(account);
+        if (serverId == null) {
+            msg.reply("");
+        } else {
+            JsonObject serverMsg = new JsonObject().put("type", MessageCode.AP_ACCOUNT_DESTROY).put("account", account).put("handlerId", handlerId);
+            vertx.eventBus().<String>request(GameConstant.API_SERVER_TITLE + serverId, serverMsg, res -> {
+                if (res.succeeded()) {
+                    removeServerId(account);
+                    logger.error("account unbind serverId success:{}", account);
+                } else {
+                    logger.error("account unbind serverId failed:{}", res.cause().getMessage());
+                }
+                msg.reply("");
+            });
+        }
     }
 
     private Future<AccountEntity> queryAccountEntity(String account, String password) {
