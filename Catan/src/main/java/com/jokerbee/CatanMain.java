@@ -3,14 +3,13 @@ package com.jokerbee;
 import com.jokerbee.handler.HandlerManager;
 import com.jokerbee.template.TemplateManager;
 import com.jokerbee.verticle.RoomVerticle;
-import com.jokerbee.verticle.GetWayVerticle;
+import com.jokerbee.verticle.GatewayVerticle;
 import io.vertx.config.ConfigRetriever;
 import io.vertx.config.ConfigRetrieverOptions;
 import io.vertx.config.ConfigStoreOptions;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
-import io.vertx.core.VertxOptions;
 import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,7 +80,7 @@ public class CatanMain {
                     .setWorkerPoolName("WebSocket")
                     .setInstances(websocketConfig.getInteger("instance"))
                     .setConfig(websocketConfig);
-            vertx.deployVerticle(GetWayVerticle.class.getName(), options, pros);
+            vertx.deployVerticle(GatewayVerticle.class.getName(), options, pros);
         }).compose(s -> Future.future(pros -> {
             // 房间启动
             JsonObject roomConfig = config.getJsonObject("room");

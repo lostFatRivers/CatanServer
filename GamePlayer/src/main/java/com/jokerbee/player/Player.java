@@ -3,7 +3,6 @@ package com.jokerbee.player;
 import com.jokerbee.handler.HandlerManager;
 import com.jokerbee.handler.IMessageConsumer;
 import com.jokerbee.support.GameConstant;
-import com.jokerbee.support.MessageCode;
 import io.vertx.core.Context;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
@@ -70,6 +69,12 @@ public class Player implements IMessageConsumer {
         }
         this.handlerId = handlerId;
         message.reply(GameConstant.RESULT_SUCCESS);
+
+        vertx.setTimer(1000, tid -> {
+            JsonObject msg = new JsonObject();
+            msg.put("result", "success");
+            sendMessage(msg);
+        });
     }
 
     @Override

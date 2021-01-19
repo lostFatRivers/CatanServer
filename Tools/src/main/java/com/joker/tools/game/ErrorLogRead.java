@@ -20,16 +20,20 @@ public class ErrorLogRead {
     private static final Logger logger = LoggerFactory.getLogger("LogRead");
 
     public static void main(String[] args) {
-        getRepeatSceneId();
+        getAllTypeError();
     }
 
     private static void getAllTypeError() {
-        FileReader reader = new FileReader("C:/Users/Administrator/Desktop/online/S4/errorlog.txt");
+        FileReader reader = new FileReader("F:/serverLog/cb1/s2/s2_lg_error.txt");
         List<String> lines = reader.readLines();
         Set<String> errors = new HashSet<>();
         for (String line : lines) {
             JsonObject json = new JsonObject(line);
             String exception = json.getString("exception");
+            if (exception.contains("not valid [logic - battlemonitor] master")
+                    || exception.contains("Connection reset by peer")) {
+                continue;
+            }
             errors.add(exception);
         }
         errors.forEach(System.out::println);

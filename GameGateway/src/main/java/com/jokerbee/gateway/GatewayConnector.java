@@ -15,7 +15,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Gateway 连接对象;
@@ -34,9 +33,9 @@ public class GatewayConnector {
     /** 连接绑定的账号 */
     private String bindAccount;
 
-    private MessageConsumer<Buffer> consumer;
+    private MessageConsumer<String> consumer;
 
-    private AtomicBoolean closeTag = new AtomicBoolean(false);
+    private final AtomicBoolean closeTag = new AtomicBoolean(false);
 
     public GatewayConnector(Vertx vertx, ServerWebSocket webSocket) {
         this.vertx = vertx;
@@ -95,7 +94,7 @@ public class GatewayConnector {
     private void onSocketSwapSuccess() {
         String address = webSocket.textHandlerID() + GameConstant.API_TAIL_MESSAGE_CLIENT;
         consumer = vertx.eventBus().consumer(address, msg -> {
-            webSocket.write(msg.body());
+            webSocket.writeTextMessage(msg.body());
             msg.reply(GameConstant.RESULT_SUCCESS);
         });
     }
@@ -110,7 +109,7 @@ public class GatewayConnector {
 
     public void invalidMessage() {
         JsonObject msg = new JsonObject().put("type", MessageCode.SC_ERROR).put("msg", "invalidMessage");
-        webSocket.write(msg.toBuffer());
+        webSocket.writeTextMessage(msg.toString());
     }
 
     public void close() {
@@ -124,10 +123,11 @@ public class GatewayConnector {
         if (consumer != null) {
             consumer.unregister();
         }
+        logger.info("websocket close:{}, handlerId:{}", webSocket.remoteAddress(), webSocket.textHandlerID());
         if (StringUtils.isEmpty(bindAccount)) {
             return;
         }
-        logger.info("websocket connect close:{}, bindAccount:{}", webSocket.remoteAddress(), bindAccount);
+        logger.info("destroy player bindAccount:{}", bindAccount);
         JsonObject json = new JsonObject().put("handlerId", webSocket.textHandlerID()).put("account", bindAccount);
         vertx.eventBus().send(GameConstant.API_ACCOUNT_UNBIND, json);
     }

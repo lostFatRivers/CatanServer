@@ -10,7 +10,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * DB数据管理器;
+ * DB数据管理器.<br/>
+ * 同步接口.
  *
  * @author: Joker
  * @date: Created in 2020/10/15 12:25

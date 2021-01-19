@@ -10,7 +10,7 @@ import io.vertx.core.http.ServerWebSocket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class GetWayVerticle extends AbstractVerticle {
+public class GatewayVerticle extends AbstractVerticle {
     private static final Logger logger = LoggerFactory.getLogger("WsServer");
 
     @Override

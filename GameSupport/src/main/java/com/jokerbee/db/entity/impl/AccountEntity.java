@@ -18,14 +18,13 @@ public class AccountEntity implements IEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
     private Long id;
 
-    @Column(name = "account")
     private String account;
 
-    @Column(name = "password")
     private String password;
+
+    private int platform;
 
     @Override
     public long getId() {
@@ -52,12 +51,21 @@ public class AccountEntity implements IEntity {
         this.password = password;
     }
 
+    public int getPlatform() {
+        return platform;
+    }
+
+    public void setPlatform(int platform) {
+        this.platform = platform;
+    }
+
     @Override
     public String toString() {
         return new StringJoiner(", ", AccountEntity.class.getSimpleName() + "[", "]")
                 .add("id=" + id)
                 .add("account='" + account + "'")
                 .add("password='" + password + "'")
+                .add("platform=" + platform)
                 .toString();
     }
 }
