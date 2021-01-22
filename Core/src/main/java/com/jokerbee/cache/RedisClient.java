@@ -474,6 +474,12 @@ public class RedisClient {
 		}
 	}
 
+	public Map<String, String> hgetAll(String key) {
+		try (Jedis jedis = jedisPool.getResource()) {
+			return jedis.hgetAll(key);
+		}
+	}
+
 	/**
 	 * Test for existence of a specified field in a hash. Time complexity: O(1)
 	 */

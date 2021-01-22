@@ -2,13 +2,13 @@ def vertxVersion = "4.0.0"
 def poiVersion = "3.17"
 
 dependencies {
+    compile project(':Core')
     compile "org.freemarker:freemarker:2.3.30"
 
-    compile "io.vertx:vertx-core:${vertxVersion}"
-    compile "io.vertx:vertx-web:${vertxVersion}"
     compile "io.vertx:vertx-config:${vertxVersion}"
     compile "io.vertx:vertx-config-hocon:${vertxVersion}"
 
+    // excel 文件读写
     compile "org.apache.poi:poi:${poiVersion}"
     compile "org.apache.poi:poi-ooxml:${poiVersion}"
     compile "org.apache.poi:poi-ooxml-schemas:${poiVersion}"

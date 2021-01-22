@@ -157,4 +157,9 @@ public class RandomUtil {
 		Random r = new Random(seed);
 		return r.nextInt(max)%(max-min+1) + min;
 	}
+
+	public static  <T> T randomValue(T[] array) {
+		int index = getRandom(0, array.length);
+		return array[index];
+	}
 }

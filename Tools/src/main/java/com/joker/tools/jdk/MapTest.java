@@ -1,11 +1,17 @@
 package com.joker.tools.jdk;
 
+import com.joker.tools.match.PlayerInfo;
+import com.joker.tools.match.WeaponType;
+import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 /**
  * 测试map;
@@ -19,7 +25,7 @@ public class MapTest {
 
     public static void main(String[] args) {
         logger.info("start");
-        testQueue();
+        jsonTest();
     }
 
     public static void testUnmodifiableMap() {
@@ -95,4 +101,31 @@ public class MapTest {
         List<Long> subList = slowList.subList(0, toIndex);
         logger.info("transform list:{}", subList);
     }
+
+    private static void consumerTest() {
+        Consumer<Integer> consumer1 = i -> logger.info("consumer1 int:{}", i);
+        Consumer<String> consumer2 = s -> logger.info("consumer2 String:{}", s);
+        BiConsumer<Integer, String> consumer3 = (k, v) -> logger.info("consumer3 key:{}, value:{}", k, v);
+
+        BiConsumer<Integer, String> consumer4 = consumer3.andThen((k, v) -> {
+            consumer1.accept(k);
+            consumer2.accept(v);
+        });
+
+        for (int i = 0; i < 10; i++) {
+            long start = System.nanoTime();
+            consumer4.accept(i, i + "_str");
+            logger.info("cost time:{}", (System.nanoTime() - start) / 1000000.0f);
+        }
+    }
+
+    private static void jsonTest() {
+        PlayerInfo info = new PlayerInfo(1, 1, WeaponType.BIG_SWORD);
+        TestBean bean = new TestBean();
+        String encode = Json.encode(bean);
+        logger.info("encode json:{}", encode);
+        JsonObject jsonObject = JsonObject.mapFrom(bean);
+        logger.info("player json:{}", jsonObject);
+    }
+
 }
