@@ -98,7 +98,7 @@ public enum MatchManager {
     }
 
     private void playerTeamMatch() {
-        out:
+      out:
         for (PlayerInfo eachPlayer : infoMap.values()) {
             if (eachPlayer.getTeamId() > 0) {
                 continue;
@@ -111,8 +111,8 @@ public enum MatchManager {
             }
             MatchTeam newTeam = new MatchTeam(eachPlayer.getLimitType());
             newTeam.checkAndAddPlayer(eachPlayer);
-            logger.info("new match team, playerId:{}, teamId:{}", eachPlayer.getId(), newTeam.getTeamId());
             teamMap.put(newTeam.getTeamId(), newTeam);
+            logger.info("new match team, playerId:{}, teamId:{}, team number:{}", eachPlayer.getId(), newTeam.getTeamId(), teamMap.size());
         }
 
         Iterator<Map.Entry<Integer, MatchTeam>> iterator = teamMap.entrySet().iterator();
