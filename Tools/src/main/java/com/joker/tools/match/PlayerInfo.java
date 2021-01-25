@@ -132,4 +132,10 @@ public class PlayerInfo implements Serializable {
             .put("startTime", startTime).put("teamId", teamId).put("limitType", limitType.name());
         return json;
     }
+
+    public String simpleInfo() {
+        JsonObject json = new JsonObject();
+        json.put("id", id).put("level", level).put("type", type.ordinal());
+        return json.toString();
+    }
 }

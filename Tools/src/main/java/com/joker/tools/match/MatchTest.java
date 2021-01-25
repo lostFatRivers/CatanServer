@@ -29,7 +29,7 @@ public class MatchTest {
         vertx.deployVerticle(MatchVerticle.class.getName(), new DeploymentOptions().setInstances(1));
 
         TimeUnit.SECONDS.sleep(1);
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < 100; i++) {
             int randomLevel = RandomUtil.getRandom(1, 4);
 //            int randomLevel = 1;
             WeaponType[] values = WeaponType.values();

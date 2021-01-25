@@ -29,6 +29,8 @@ public enum MatchManager {
 
     private final Map<Integer, MatchTeam> teamMap = new HashMap<>();
 
+    private int matchSuccessCount = 0;
+
     public static MatchManager getInstance() {
         return INSTANCE;
     }
@@ -105,7 +107,7 @@ public enum MatchManager {
             }
             for (MatchTeam eachTeam : teamMap.values()) {
                 if (eachTeam.checkAndAddPlayer(eachPlayer)) {
-                    logger.info("player join team, playerId:{}, teamId:{}, current team member:{}", eachPlayer.getId(), eachTeam.getTeamId(), eachTeam.getMemberIds());
+                    logger.info("player join team, playerId:{}, teamId:{}, current team member:{}", eachPlayer.getId(), eachTeam.getTeamId(), eachTeam.getMemberSimples());
                     break out;
                 }
             }
@@ -122,7 +124,8 @@ public enum MatchManager {
             if (team.isNotFull()) {
                 continue;
             }
-            logger.info("team matched success, teamId:{}", team.getTeamId());
+            matchSuccessCount++;
+            logger.info("team matched success, teamId:{}, successNumber:{}", team.getTeamId(), matchSuccessCount);
             List<PlayerInfo> members = team.getMembers();
             for (PlayerInfo eachInfo : members) {
                 infoMap.remove(eachInfo.getId());

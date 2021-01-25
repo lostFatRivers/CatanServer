@@ -85,6 +85,10 @@ public class MatchTeam {
         return members.stream().map(PlayerInfo::getId).collect(Collectors.toList());
     }
 
+    public List<String> getMemberSimples() {
+        return members.stream().map(PlayerInfo::simpleInfo).collect(Collectors.toList());
+    }
+
     public void removePlayer(int playerId) {
         Iterator<PlayerInfo> iterator = members.iterator();
         while (iterator.hasNext()) {
