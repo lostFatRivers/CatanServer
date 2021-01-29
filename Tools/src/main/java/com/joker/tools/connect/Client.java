@@ -40,8 +40,8 @@ public class Client {
                             logger.error("connect failed.", res.cause());
                         }
                     });
-            Future<HttpClientRequest> request = httpClient.request(HttpMethod.GET, 8080, "10.0.0.159", "/item");
-
+            //Future<HttpClientRequest> request = httpClient.request(HttpMethod.GET, 8080, "10.0.0.159", "/item");
+            httpClient.request(HttpMethod.GET, 8080, "10.0.0.159", "/item");
             NetClient netClient = vertx.createNetClient();
 
         }

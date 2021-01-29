@@ -1,9 +1,6 @@
 package com.jokerbee.behavior.composite;
 
-import com.jokerbee.behavior.IBehaviorNode;
-import com.jokerbee.behavior.IComposite;
-import com.jokerbee.behavior.RunStatus;
-import com.jokerbee.behavior.node.AbstractBehaviorNode;
+import com.jokerbee.behavior.*;
 
 /**
  * 选择控制;
@@ -12,11 +9,11 @@ import com.jokerbee.behavior.node.AbstractBehaviorNode;
  * @date: Created in 2020/12/2 22:14
  * @version: 1.0
  */
-public class Selector extends AbstractBehaviorNode implements IComposite {
+public class Selector extends AbstractComposite implements IComposite {
 
     @Override
-    protected boolean doEvaluate(Object input) {
-        RunStatus status = RunStatus.FRESH;
+    protected boolean doEvaluate(BehaviorContext input) {
+        BStatus status = BStatus.FRESH;
         for (IBehaviorNode eachBh : children) {
 
         }
@@ -27,4 +24,10 @@ public class Selector extends AbstractBehaviorNode implements IComposite {
     public void tick() {
 
     }
+
+    @Override
+    public IAction nextAction() {
+        return null;
+    }
 }
+

@@ -25,7 +25,7 @@ public class MapTest {
 
     public static void main(String[] args) {
         logger.info("start");
-        jsonTest();
+        consumerTest2();
     }
 
     public static void testUnmodifiableMap() {
@@ -128,4 +128,21 @@ public class MapTest {
         logger.info("player json:{}", jsonObject);
     }
 
+    private static void consumerTest2() {
+        Consumer<String> consumer = s -> logger.info("consumer2 String:{}", s);
+
+        for (int i = 0; i < 10; i++) {
+            long start = System.nanoTime();
+            consumer.accept(i + "");
+            logger.info("1 cost time:{}", (System.nanoTime() - start) / 1000000.0f);
+
+            start = System.nanoTime();
+            printStr(i + "");
+            logger.info("2 cost time:{}", (System.nanoTime() - start) / 1000000.0f);
+        }
+    }
+
+    private static void printStr(String str) {
+        logger.info("printStr String:{}", str);
+    }
 }

@@ -7,7 +7,7 @@ package com.jokerbee.behavior;
  * @date: Created in 2020/12/2 10:42
  * @version: 1.0
  */
-public enum RunStatus {
+public enum BStatus {
     /** 初始 */
     FRESH,
     /** 执行成功 */

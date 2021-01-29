@@ -9,4 +9,5 @@ package com.jokerbee.behavior;
  */
 public interface IComposite extends IBehaviorNode {
 
+    IAction nextAction();
 }
