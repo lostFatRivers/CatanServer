@@ -7,6 +7,8 @@ dependencies {
 
     compile "io.vertx:vertx-config:${vertxVersion}"
     compile "io.vertx:vertx-config-hocon:${vertxVersion}"
+    // 使用 vertx 的 json 的 mapFrom 需要导入 jackson 的 databind 包
+    compile 'com.fasterxml.jackson.core:jackson-databind:2.11.3'
 
     // excel 文件读写
     compile "org.apache.poi:poi:${poiVersion}"

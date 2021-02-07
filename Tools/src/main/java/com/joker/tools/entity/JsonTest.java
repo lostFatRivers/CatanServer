@@ -17,8 +17,9 @@ public class JsonTest {
     public static void main(String[] args) {
         AccountEntity entity = new AccountEntity();
         entity.setId(1);
-        entity.setAccount("1");
-        entity.setPassword("123");
+        entity.setAccount("account");
+        entity.setPassword("123321");
+
 
         JsonObject object = JsonObject.mapFrom(entity);
         logger.info("json str:{}", object.encodePrettily());
