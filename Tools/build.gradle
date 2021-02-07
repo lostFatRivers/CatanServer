@@ -1,4 +1,4 @@
-def vertxVersion = "4.0.0"
+def vertxVersion = "4.0.2"
 def poiVersion = "3.17"
 
 dependencies {

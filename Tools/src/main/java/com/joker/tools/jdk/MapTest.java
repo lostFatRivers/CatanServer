@@ -25,7 +25,7 @@ public class MapTest {
 
     public static void main(String[] args) {
         logger.info("start");
-        consumerTest2();
+        testMatch();
     }
 
     public static void testUnmodifiableMap() {
@@ -144,5 +144,64 @@ public class MapTest {
 
     private static void printStr(String str) {
         logger.info("printStr String:{}", str);
+    }
+
+    private static void strHashCode() {
+        String str = "IfElse";
+        logger.info("相同字符串的 hashCode 是固定的, code:{}", str.hashCode());
+    }
+
+    private static List<String> match(String contentStr, String shieldStr) {
+        char[] contentChars = contentStr.toCharArray();
+        char[] shieldChars = shieldStr.toCharArray();
+
+        List<String> matchList = new ArrayList<>();
+
+        // 深度, 屏蔽词中间穿插无关字符的个数
+        final int DEEP_SIZE = 2;
+
+        int matchIndex = 0;
+        int notMatchNum = 0;
+
+        StringBuilder sb = new StringBuilder();
+        for (char eachChar : contentChars) {
+            for (int i = matchIndex; i < shieldChars.length; i++) {
+                char eachShield = shieldChars[i];
+                if (eachChar == eachShield) {               // 匹配上字符
+                    matchIndex++;
+                    sb.append(eachChar);
+                    notMatchNum = 0;
+                    if (matchIndex == shieldChars.length) { // 匹配到末尾字符, 完成匹配并清理记录, 继续匹配后续字符
+                        matchList.add(sb.toString());
+                        matchIndex = 0;
+                        sb = new StringBuilder();
+                    }
+                    break;
+                }
+                if (matchIndex <= 0) {                      // 没有匹配上字符, 并且非中间穿插无关字符
+                    break;
+                }
+                notMatchNum ++;                             // 是中间穿插字符, 累计穿插字符个数
+                sb.append(eachChar);
+                if (notMatchNum <= DEEP_SIZE) {
+                    break;
+                }
+                matchIndex = 0;                             // 中间穿插字符超过深度限制, 则清理记录, 继续匹配后续字符
+                notMatchNum = 0;
+                sb = new StringBuilder();
+            }
+        }
+        return matchList;
+    }
+
+    private static void testMatch() {
+        String contentStr = "有穷自动机的分类, 有穷自动1机的分类, 有穷自动12机的分类, 有穷自动123机的分类";
+        String shieldStr = "动机";
+
+        for (int i = 0; i < 20000; i++) {
+            List<String> matchList = match(contentStr, shieldStr);
+            logger.debug("match result: {}", matchList);
+        }
+        logger.info("match finished.");
     }
 }

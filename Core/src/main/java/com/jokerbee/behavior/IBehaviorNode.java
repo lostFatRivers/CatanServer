@@ -25,13 +25,6 @@ public interface IBehaviorNode {
     boolean evaluate(BehaviorContext input);
 
     /**
-     * 切换到另一个节点行为;
-     *
-     * @param input 运行参数
-     */
-    void transition(BehaviorContext input);
-
-    /**
      * 帧更新;
      */
     void tick();

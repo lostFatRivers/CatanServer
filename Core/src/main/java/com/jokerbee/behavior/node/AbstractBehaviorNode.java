@@ -53,9 +53,4 @@ public abstract class AbstractBehaviorNode implements IBehaviorNode {
         return status;
     }
 
-    @Override
-    public void transition(BehaviorContext input) {
-
-    }
-
 }
