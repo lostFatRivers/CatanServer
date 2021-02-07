@@ -3,6 +3,8 @@ def vertxVersion = "4.0.2"
 dependencies {
     compile "io.vertx:vertx-core:${vertxVersion}"
     compile "io.vertx:vertx-web:${vertxVersion}"
+    // 使用 vertx 的 json 的 mapFrom 需要导入 jackson 的 databind 包
+    compile 'com.fasterxml.jackson.core:jackson-databind:2.11.3'
 
     compile "commons-codec:commons-codec:1.14"
     compile "org.apache.commons:commons-crypto:1.0.0"
