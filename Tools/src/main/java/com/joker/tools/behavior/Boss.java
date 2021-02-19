@@ -35,6 +35,8 @@ public class Boss implements IActionHost {
     }
 
     public void randomMove() {
+        // 重置结束标记
+        this.finished = false;
         targetPosition[0] = RandomUtil.getRandom(1, 30);
         targetPosition[1] = RandomUtil.getRandom(1, 30);
         targetPosition[2] = RandomUtil.getRandom(1, 30);

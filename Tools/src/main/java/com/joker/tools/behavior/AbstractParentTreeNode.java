@@ -33,6 +33,15 @@ public abstract class AbstractParentTreeNode extends AbstractTreeNode {
         return this.status;
     }
 
+    @Override
+    public void setStatus(TreeStatus status) {
+        super.setStatus(status);
+        // 重置所有子节点状态;
+        if (status == TreeStatus.READY) {
+            children.forEach(node -> node.setStatus(status));
+        }
+    }
+
     /**
      * 选择下一个要执行的子节点;
      *

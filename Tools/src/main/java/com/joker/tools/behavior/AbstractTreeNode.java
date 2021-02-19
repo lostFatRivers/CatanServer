@@ -1,7 +1,5 @@
 package com.joker.tools.behavior;
 
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * 树节点基类;

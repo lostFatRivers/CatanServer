@@ -8,9 +8,9 @@ package com.joker.tools.behavior;
  * @version: 1.0
  */
 public class BehaviorTree implements ITreeNode {
-    private final AbstractParentTreeNode root;
+    private final AbstractTreeNode root;
 
-    public BehaviorTree(AbstractParentTreeNode node) {
+    public BehaviorTree(AbstractTreeNode node) {
         this.root = node;
     }
 

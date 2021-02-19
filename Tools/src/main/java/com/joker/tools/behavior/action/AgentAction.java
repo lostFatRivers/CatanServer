@@ -30,6 +30,7 @@ public class AgentAction<T extends IActionHost> extends AbstractTreeNode {
     @Override
     public void onExecuted() {
         super.onExecuted();
+        this.executed = false;
         this.startTime = TimeUtil.getTime();
     }
 

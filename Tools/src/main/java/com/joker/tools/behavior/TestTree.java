@@ -4,7 +4,9 @@ import com.joker.tools.behavior.action.AgentAction;
 import com.joker.tools.behavior.action.Log;
 import com.joker.tools.behavior.action.Wait;
 import com.joker.tools.behavior.composite.Parallel;
+import com.joker.tools.behavior.composite.Selector;
 import com.joker.tools.behavior.composite.Sequence;
+import com.joker.tools.behavior.decorator.Loop;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,8 +15,8 @@ public class TestTree {
     private static final Logger logger = LoggerFactory.getLogger("Test");
 
     public static void main(String[] args) {
-//        Selector root = new Selector();
-        Sequence root = new Sequence();
+        Selector root = new Selector();
+//        Sequence root = new Sequence();
 
         Parallel parallel1 = new Parallel(Parallel.ParallelStrategy.FAIL_IN_ONE);
         Sequence sequence2 = new Sequence();
@@ -36,7 +38,9 @@ public class TestTree {
         sequence2.addChild(wait1);
         sequence2.addChild(log2);
 
-        BehaviorTree tree = new BehaviorTree(root);
+        Loop loop = new Loop(root, -1);
+
+        BehaviorTree tree = new BehaviorTree(loop);
 
         BehaviorManager.getInstance().pushTree(tree);
 
