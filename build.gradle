@@ -8,8 +8,9 @@ subprojects {
     def commonsVersion = 2.6
 
     repositories {
-        jcenter()
-        mavenCentral()
+//        jcenter()
+//        mavenCentral()
+        maven{ url 'http://maven.aliyun.com/nexus/content/groups/public/'}
     }
 
     dependencies {
